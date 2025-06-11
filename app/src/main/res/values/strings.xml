@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Alias</string>
+
+    <string name="title">ЕЛІАС</string>
+    <string name="start_game">Почати гру</string>
+    <string name="rules">Як грати</string>
+    <string name="settings">Налаштування</string>
+    <string name="history">Історія ігор</string>
+    <string name="exit">Вийти</string>
 </resources>
