@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback;
 
 import com.example.alias.R;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.gamemode.GameModeActivity;
 import com.example.alias.ui.rules.RuleActivity;
 
 public class MainActivity extends BaseActivity {
@@ -28,6 +29,7 @@ public class MainActivity extends BaseActivity {
 
         animateButtons(btnPlay, btnHowToPlay, btnHistory, btnSettings, btnExit);
 
+        btnPlay.setOnClickListener(v -> navigateTo(GameModeActivity.class));
         btnHowToPlay.setOnClickListener(v -> navigateTo(RuleActivity.class));
         btnExit.setOnClickListener(v -> finish());
 

@@ -13,9 +13,9 @@ public class RuleActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rules);
+        setupHeader(R.string.rules);
 
         TextView tvRules = findViewById(R.id.tvRules);
         tvRules.setText(Html.fromHtml(getString(R.string.game_rules), Html.FROM_HTML_MODE_LEGACY));
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
     }
 }
