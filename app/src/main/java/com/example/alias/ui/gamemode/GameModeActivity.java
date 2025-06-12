@@ -5,6 +5,7 @@ import android.widget.Button;
 
 import com.example.alias.R;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.setup.GameSetupActivity;
 
 public class GameModeActivity extends BaseActivity {
 
@@ -19,5 +20,7 @@ public class GameModeActivity extends BaseActivity {
         Button btnCreateLobby = findViewById(R.id.btnCreateLobby);
 
         animateButtons(btnSingleDevice, btnJoinLobby, btnCreateLobby);
+
+        btnSingleDevice.setOnClickListener(v -> navigateTo(GameSetupActivity.class));
     }
 }

@@ -6,4 +6,11 @@
     <color name="white">#FFFFFF</color>
     <color name="yellow_gradient">#FFEB3B</color>
     <color name="orange_gradient">#FF9800</color>
+
+    <color name="selectedTile">#FFFFFF</color>
+    <color name="unselectedTile">#33FFFFFF</color>
+
+    <color name="easyGreen">#4CAF50</color>
+    <color name="mediumYellow">#EDDA00</color>
+    <color name="hardRed">#F44336</color>
 </resources>
