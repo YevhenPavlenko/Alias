@@ -102,14 +102,30 @@ public class GameSetupActivity extends BaseActivity {
         rvTeams.setLayoutManager(new LinearLayoutManager(this));
 
         btnAddTeam.setOnClickListener(v -> {
-            if (teamList.size() < 4) {
-                teamList.add(new Team("Команда " + (teamList.size() + 1)));
-                adapter.notifyItemInserted(teamList.size() - 1);
-            } else {
+            if (teamList.size() >= 4) {
                 showToast("Максимум 4 команди");
+                return;
             }
+
+            int index = 1;
+            String newName;
+            do {
+                newName = "Команда " + index++;
+            } while (isNameAlreadyUsed(teamList, newName));
+
+            teamList.add(new Team(newName));
+            adapter.notifyItemInserted(teamList.size() - 1);
         });
 
         SwipeHelper.attachSwipeToDelete(rvTeams, adapter);
+    }
+
+    private boolean isNameAlreadyUsed(List<Team> teamList, String name) {
+        for (Team team : teamList) {
+            if (team.getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

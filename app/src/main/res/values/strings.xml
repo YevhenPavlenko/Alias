@@ -54,4 +54,17 @@
     <string name="save">Зберегти</string>
     <string name="cancel">Скасувати</string>
 
+    <string-array name="team_name_suggestions">
+        <item>Кмітливі</item>
+        <item>Блискавки</item>
+        <item>Ракети</item>
+        <item>Бобри</item>
+        <item>Синоніми</item>
+        <item>Влучні</item>
+        <item>Буревії</item>
+        <item>Шторм</item>
+        <item>Кодери</item>
+        <item>Герої</item>
+        <item>Лідери</item>
+    </string-array>
 </resources>

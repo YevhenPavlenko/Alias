@@ -1,5 +1,6 @@
 package com.example.alias.ui.setup.adapter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.util.TypedValue;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.alias.R;
 import com.example.alias.model.Team;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -51,7 +53,9 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder
 
     private void setupRandomNameButton(@NonNull TeamViewHolder holder, Team team, int position) {
         holder.btnRandom.setOnClickListener(v -> {
-            team.setName(generateRandomName());
+            String name = generateUniqueRandomName();
+            team.setName(name);
+
             notifyItemChanged(position);
         });
     }
@@ -61,38 +65,83 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder
     }
 
     private void showEditDialog(Context context, Team team, int position) {
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_team_name, null);
+        ViewGroup root = ((Activity) context).findViewById(android.R.id.content);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_team_name, root, false);
         EditText etTeamName = dialogView.findViewById(R.id.etTeamName);
         etTeamName.setText(team.getName());
 
-        AlertDialog dialog = new AlertDialog.Builder(context, R.style.CustomDialog)
+        AlertDialog dialog = buildDialog(context, dialogView);
+
+        setupSaveButton(dialogView, etTeamName, dialog, team, position);
+        setupCancelButton(dialogView, dialog);
+
+        dialog.show();
+        setDialogWidth(dialog, context, 350);
+    }
+
+    private AlertDialog buildDialog(Context context, View dialogView) {
+        return new AlertDialog.Builder(context, R.style.CustomDialog)
                 .setView(dialogView)
                 .setCancelable(true)
                 .create();
+    }
 
-        dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
-            String updatedName = etTeamName.getText().toString().trim();
-            if (!updatedName.isEmpty()) {
-                team.setName(updatedName);
-                notifyItemChanged(position);
-            }
-            dialog.dismiss();
-        });
-
-        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
-
-        dialog.show();
+    private void setDialogWidth(AlertDialog dialog, Context context, int dpWidth) {
         Objects.requireNonNull(dialog.getWindow()).setLayout(
                 (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, 350, context.getResources().getDisplayMetrics()
+                        TypedValue.COMPLEX_UNIT_DIP, dpWidth, context.getResources().getDisplayMetrics()
                 ),
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
     }
 
-    private String generateRandomName() {
-        String[] suggestions = {"Кмітливі", "Блискавки", "Ракети", "Словаки", "Синоніми", "Влучні"};
-        return suggestions[new Random().nextInt(suggestions.length)];
+    private void setupSaveButton(View dialogView, EditText etTeamName, AlertDialog dialog, Team team, int position) {
+        dialogView.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            String updatedName = etTeamName.getText().toString().trim();
+
+            if (updatedName.length() > 20) {
+                etTeamName.setError("Назва команди не може бути більша за 20 символів");
+            } else if (!isValidName(updatedName, team)) {
+                etTeamName.setError("Ця назва вже існує або недійсна");
+            } else {
+                team.setName(updatedName);
+                notifyItemChanged(position);
+                dialog.dismiss();
+            }
+        });
+    }
+
+    private void setupCancelButton(View dialogView, AlertDialog dialog) {
+        dialogView.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+    }
+
+    private boolean isValidName(String name, Team currentTeam) {
+        if (name.isEmpty()) return false;
+
+        for (Team t : teams) {
+            if (t != currentTeam && t.getName().equalsIgnoreCase(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String generateUniqueRandomName() {
+        String[] suggestions = context.getResources().getStringArray(R.array.team_name_suggestions);
+
+        List<String> currentNames = new ArrayList<>();
+        for (Team team : teams) {
+            currentNames.add(team.getName());
+        }
+
+        List<String> available = new ArrayList<>();
+        for (String name : suggestions) {
+            if (!currentNames.contains(name)) {
+                available.add(name);
+            }
+        }
+
+        return available.get(new Random().nextInt(available.size()));
     }
 
     @Override
