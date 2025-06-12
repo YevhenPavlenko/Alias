@@ -32,6 +32,11 @@ public class GameSetupActivity extends BaseActivity {
         setupDifficultyButtons();
         setupTimeSeekBar();
         setupTeamCards();
+
+        Button btnAddTeam = findViewById(R.id.btnAddTeam);
+        Button btnPlay = findViewById(R.id.btnPlay);
+
+        animateButtons(btnAddTeam, btnPlay);
     }
 
     private void setupDifficultyButtons() {
