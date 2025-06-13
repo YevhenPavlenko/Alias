@@ -53,7 +53,10 @@
     <string name="team_name">Назва команди</string>
     <string name="save">Зберегти</string>
     <string name="cancel">Скасувати</string>
+
     <string name="word">Слово</string>
+    <string name="guessed">Відгадано</string>
+    <string name="skip">Пропустити</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

@@ -13,4 +13,8 @@
     <color name="easyGreen">#4CAF50</color>
     <color name="mediumYellow">#EDDA00</color>
     <color name="hardRed">#F44336</color>
+
+    <color name="correctGreen">#70BE74</color>
+    <color name="wrongRed">#E45656</color>
+
 </resources>
