@@ -77,9 +77,14 @@
         android:layout_marginTop="8dp"
         android:max="90"
         android:progress="30"
+        android:progressTint="#FF6F00"
+        android:thumbTint="#FFFFFF"
+        android:splitTrack="false"
+        android:trackTint="#DADADA"
         app:layout_constraintTop_toBottomOf="@id/tvTimeLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
     <TextView
         android:id="@+id/tvTimeValue"
