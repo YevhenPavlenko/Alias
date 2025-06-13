@@ -27,6 +27,8 @@
             android:exported="false" />
         <activity android:name=".ui.setup.GameSetupActivity"
             android:exported="false" />
+        <activity android:name=".ui.game.GameActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

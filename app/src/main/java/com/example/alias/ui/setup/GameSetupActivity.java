@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.alias.R;
 import com.example.alias.model.Team;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.game.GameActivity;
 import com.example.alias.ui.setup.adapter.TeamAdapter;
 import com.example.alias.util.SwipeHelper;
 
@@ -37,6 +38,8 @@ public class GameSetupActivity extends BaseActivity {
         Button btnPlay = findViewById(R.id.btnPlay);
 
         animateButtons(btnAddTeam, btnPlay);
+
+        btnPlay.setOnClickListener(v -> navigateTo(GameActivity.class));
     }
 
     private void setupDifficultyButtons() {
