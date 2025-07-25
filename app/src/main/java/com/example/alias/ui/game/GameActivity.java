@@ -8,17 +8,19 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.alias.R;
+import com.example.alias.model.Game;
 import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.util.DashedZoneDrawable;
+import com.example.alias.util.WordUtils;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class GameActivity extends BaseActivity {
 
     private TextView tvWordCard;
-    private final List<String> words = Arrays.asList("Море", "Сонце", "Ракета", "Книга", "Піца", "Кава");
     private int currentWordIndex = 0;
+
+    private Game game;
 
     private float dY = 0f;
 
@@ -27,11 +29,18 @@ public class GameActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        initializeGame();
+
         tvWordCard = findViewById(R.id.wordCard);
         showCurrentWord();
-
         setupZones();
         setupCardSwipe();
+    }
+
+    private void initializeGame() {
+        List<String> randomWords = WordUtils.getRandomWords(this, 100);
+        game = new Game(randomWords.toArray(new String[0]));
+        currentWordIndex = 0;
     }
 
     @SuppressLint("ResourceType")
@@ -41,11 +50,11 @@ public class GameActivity extends BaseActivity {
     }
 
     private void showCurrentWord() {
-        if (currentWordIndex < words.size()) {
-            tvWordCard.setText(words.get(currentWordIndex));
+        if (currentWordIndex < game.wordsList.size()) {
+            tvWordCard.setText(game.wordsList.get(currentWordIndex));
             tvWordCard.setTranslationY(0);
         } else {
-            tvWordCard.setText("");
+            tvWordCard.setText("Гру завершено!");
         }
     }
 
