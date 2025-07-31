@@ -32,6 +32,7 @@ public class GameSetupActivity extends BaseActivity {
 
         setupDifficultyButtons();
         setupTimeSeekBar();
+        setupPointSeekBar();
         setupTeamCards();
 
         Button btnAddTeam = findViewById(R.id.btnAddTeam);
@@ -85,6 +86,22 @@ public class GameSetupActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
+    }
+
+    private void setupPointSeekBar() {
+        AppCompatSeekBar sbWinningPoints = findViewById(R.id.sbWinningPoints);
+        TextView tvWinningPointsValue = findViewById(R.id.tvWinningPointsValue);
+
+        sbWinningPoints.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int points = Math.max(progress, 10);
+                tvWinningPointsValue.setText(String.valueOf(points));
+            }
+
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 
