@@ -59,7 +59,7 @@
     <string name="word">Слово</string>
     <string name="guessed">Відгадано</string>
     <string name="skip">Пропустити</string>
-    <string name="time_left">Часу залишилося</string>
+    <string name="time_left">Часу залишилося: %d</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

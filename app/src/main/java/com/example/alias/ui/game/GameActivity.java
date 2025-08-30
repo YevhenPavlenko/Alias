@@ -163,7 +163,7 @@ public class GameActivity extends BaseActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 int sec = (int) (millisUntilFinished / 1000);
-                tvTimeLeft.setText("Часу залишилося: " + sec);
+                tvTimeLeft.setText(getResources().getString(R.string.time_left, sec));
             }
 
             @Override
