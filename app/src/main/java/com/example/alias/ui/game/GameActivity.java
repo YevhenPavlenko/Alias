@@ -1,24 +1,29 @@
 package com.example.alias.ui.game;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
 import com.example.alias.R;
 import com.example.alias.model.Game;
+import com.example.alias.model.Team;
 import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.util.DashedZoneDrawable;
-import com.example.alias.util.WordUtils;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class GameActivity extends BaseActivity {
 
     private TextView tvWordCard;
+    private TextView tvTimeLeft;
+    private TextView tvTeamName;
     private int currentWordIndex = 0;
+    private int currentTeamIndex = 0;
 
     private Game game;
 
@@ -30,17 +35,39 @@ public class GameActivity extends BaseActivity {
         setContentView(R.layout.activity_game);
 
         initializeGame();
-
-        tvWordCard = findViewById(R.id.wordCard);
-        showCurrentWord();
-        setupZones();
-        setupCardSwipe();
+        setupLayout();
+        startTurn();
     }
 
     private void initializeGame() {
-        List<String> randomWords = WordUtils.getRandomWords(this, 100);
-        game = new Game(randomWords.toArray(new String[0]));
-        currentWordIndex = 0;
+        Intent intent = getIntent();
+        int timeLimit = intent.getIntExtra("timeLimit", 60);
+        int winningPoints = intent.getIntExtra("winningPoints", 30);
+        String difficulty = intent.getStringExtra("difficulty");
+        ArrayList<Team> teams = (ArrayList<Team>) intent.getSerializableExtra("teams");
+
+        game = new Game(teams, timeLimit, winningPoints, difficulty, this);
+    }
+
+    private void setupLayout() {
+        initializeLayout();
+        setupZones();
+        setupCardSwipe();
+        showCurrentWord();
+    }
+
+    private void initializeLayout() {
+        tvWordCard = findViewById(R.id.wordCard);
+        tvTimeLeft = findViewById(R.id.tvTimeLeft);
+        tvTeamName = findViewById(R.id.tvTeamName);
+    }
+
+    private void startTurn() {
+        currentTeamIndex = currentTeamIndex == game.teamsList.size() ? 0 : currentTeamIndex;
+        tvTeamName.setText(game.teamsList.get(currentTeamIndex).getName());
+        startTimer(game.turnTime);
+
+        currentTeamIndex++;
     }
 
     @SuppressLint("ResourceType")
@@ -54,7 +81,7 @@ public class GameActivity extends BaseActivity {
             tvWordCard.setText(game.wordsList.get(currentWordIndex));
             tvWordCard.setTranslationY(0);
         } else {
-            tvWordCard.setText("Гру завершено!");
+            tvWordCard.setText("Слова закінчилися!");
         }
     }
 
@@ -126,8 +153,25 @@ public class GameActivity extends BaseActivity {
                     tvWordCard.postDelayed(() -> {
                         tvWordCard.setTranslationY(0f);
                         showCurrentWord();
-                    }, 300);
+                    }, 100);
                 })
                 .start();
     }
+
+    private void startTimer(int seconds) {
+        new CountDownTimer(seconds * 1000L, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                int sec = (int) (millisUntilFinished / 1000);
+                tvTimeLeft.setText("Часу залишилося: " + sec);
+            }
+
+            @Override
+            public void onFinish() {
+                startTurn();
+
+            }
+        }.start();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.example.alias.ui.setup;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,8 @@ import java.util.List;
 
 public class GameSetupActivity extends BaseActivity {
 
+    private List<Team> teamsList;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +43,25 @@ public class GameSetupActivity extends BaseActivity {
 
         animateButtons(btnAddTeam, btnPlay);
 
-        btnPlay.setOnClickListener(v -> navigateTo(GameActivity.class));
+        btnPlay.setOnClickListener(v -> {
+            Intent intent = new Intent(this, GameActivity.class);
+
+            int timeLimit = 30 + ((AppCompatSeekBar) findViewById(R.id.sbTime)).getProgress();
+            int winningPoints = Math.max(((AppCompatSeekBar) findViewById(R.id.sbWinningPoints)).getProgress(), 10);
+
+            String difficulty = "easy";
+            if (findViewById(R.id.btnMedium).isSelected()) difficulty = "medium";
+            else if (findViewById(R.id.btnHard).isSelected()) difficulty = "hard";
+
+            ArrayList<Team> teams = new ArrayList<>(teamsList);
+
+            intent.putExtra("timeLimit", timeLimit);
+            intent.putExtra("winningPoints", winningPoints);
+            intent.putExtra("difficulty", difficulty);
+            intent.putExtra("teams", teams);
+
+            startActivity(intent);
+        });
     }
 
     private void setupDifficultyButtons() {
@@ -113,16 +134,16 @@ public class GameSetupActivity extends BaseActivity {
         RecyclerView rvTeams = findViewById(R.id.rvTeams);
         AppCompatButton btnAddTeam = findViewById(R.id.btnAddTeam);
 
-        List<Team> teamList = new ArrayList<>();
-        teamList.add(new Team("Команда 1"));
-        teamList.add(new Team("Команда 2"));
+        teamsList = new ArrayList<>();
+        teamsList.add(new Team("Команда 1"));
+        teamsList.add(new Team("Команда 2"));
 
-        TeamAdapter adapter = new TeamAdapter(this, teamList);
+        TeamAdapter adapter = new TeamAdapter(this, teamsList);
         rvTeams.setAdapter(adapter);
         rvTeams.setLayoutManager(new LinearLayoutManager(this));
 
         btnAddTeam.setOnClickListener(v -> {
-            if (teamList.size() >= 4) {
+            if (teamsList.size() >= 4) {
                 showToast("Максимум 4 команди");
                 return;
             }
@@ -131,10 +152,10 @@ public class GameSetupActivity extends BaseActivity {
             String newName;
             do {
                 newName = "Команда " + index++;
-            } while (isNameAlreadyUsed(teamList, newName));
+            } while (isNameAlreadyUsed(teamsList, newName));
 
-            teamList.add(new Team(newName));
-            adapter.notifyItemInserted(teamList.size() - 1);
+            teamsList.add(new Team(newName));
+            adapter.notifyItemInserted(teamsList.size() - 1);
         });
 
         SwipeHelper.attachSwipeToDelete(rvTeams, adapter);

@@ -14,11 +14,11 @@ import java.util.Set;
 
 public class WordUtils {
 
-    public static List<String> getRandomWords(Context context, int count) {
+    public static List<String> getRandomWords(Context context, int count, String difficulty) {
         Set<String> uniqueWords = new HashSet<>();
 
         try {
-            InputStream inputStream = context.getAssets().open("words.txt");
+            InputStream inputStream = context.getAssets().open("words_" + difficulty + ".txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             String line;
