@@ -1,9 +1,7 @@
 package com.example.alias.ui.setup.adapter;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.alias.R;
 import com.example.alias.model.Team;
+import com.example.alias.util.DialogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder> {
@@ -47,9 +45,8 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder
         holder.tvTeamName.setText(formattedName);
 
         setupRandomNameButton(holder, team, position);
-        setupEditNameButton(holder, team, position);
+        setupEditNameButton(holder, team, position, R.layout.dialog_edit_team_name);
     }
-
 
     private void setupRandomNameButton(@NonNull TeamViewHolder holder, Team team, int position) {
         holder.btnRandom.setOnClickListener(v -> {
@@ -60,39 +57,22 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder
         });
     }
 
-    private void setupEditNameButton(@NonNull TeamViewHolder holder, Team team, int position) {
-        holder.btnEdit.setOnClickListener(v -> showEditDialog(holder.itemView.getContext(), team, position));
+    private void setupEditNameButton(@NonNull TeamViewHolder holder, Team team, int position, int layout) {
+        holder.btnEdit.setOnClickListener(v -> showEditDialog(holder.itemView.getContext(), team, position, layout));
     }
 
-    private void showEditDialog(Context context, Team team, int position) {
-        ViewGroup root = ((Activity) context).findViewById(android.R.id.content);
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_team_name, root, false);
+    private void showEditDialog(Context context, Team team, int position, int layout) {
+        View dialogView = DialogUtils.inflateDialogView(context, layout);
         EditText etTeamName = dialogView.findViewById(R.id.etTeamName);
         etTeamName.setText(team.getName());
 
-        AlertDialog dialog = buildDialog(context, dialogView);
+        AlertDialog dialog = DialogUtils.buildDialog(context, dialogView);
 
         setupSaveButton(dialogView, etTeamName, dialog, team, position);
         setupCancelButton(dialogView, dialog);
 
         dialog.show();
-        setDialogWidth(dialog, context, 350);
-    }
-
-    private AlertDialog buildDialog(Context context, View dialogView) {
-        return new AlertDialog.Builder(context, R.style.CustomDialog)
-                .setView(dialogView)
-                .setCancelable(true)
-                .create();
-    }
-
-    private void setDialogWidth(AlertDialog dialog, Context context, int dpWidth) {
-        Objects.requireNonNull(dialog.getWindow()).setLayout(
-                (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, dpWidth, context.getResources().getDisplayMetrics()
-                ),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
+        DialogUtils.setDialogWidth(dialog, context, 350);
     }
 
     private void setupSaveButton(View dialogView, EditText etTeamName, AlertDialog dialog, Team team, int position) {

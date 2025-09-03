@@ -37,7 +37,8 @@
         android:elevation="4dp"
         android:gravity="center"
         android:text="@string/time_left"
-        android:textColor="#FFF"
+        android:textColor="#FFFFFF"
+        android:alpha="0"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@+id/topZone"
@@ -60,21 +61,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvTeamName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:elevation="4dp"
-        android:gravity="center"
-        android:text="@string/team_name"
-        android:textColor="#FFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/wordCard"
-        app:layout_constraintBottom_toTopOf="@+id/bottomZone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
     <FrameLayout
         android:id="@+id/bottomZone"

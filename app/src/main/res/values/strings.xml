@@ -60,6 +60,8 @@
     <string name="guessed">Відгадано</string>
     <string name="skip">Пропустити</string>
     <string name="time_left">Часу залишилося: %d</string>
+    <string name="team_turn">Хід команди — %s</string>
+    <string name="start_turn">Почати хід</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

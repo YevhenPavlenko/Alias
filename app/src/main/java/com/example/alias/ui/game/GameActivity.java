@@ -1,6 +1,7 @@
 package com.example.alias.ui.game;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -14,14 +15,15 @@ import com.example.alias.model.Game;
 import com.example.alias.model.Team;
 import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.util.DashedZoneDrawable;
+import com.example.alias.util.DialogUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class GameActivity extends BaseActivity {
 
     private TextView tvWordCard;
     private TextView tvTimeLeft;
-    private TextView tvTeamName;
     private int currentWordIndex = 0;
     private int currentTeamIndex = 0;
 
@@ -45,6 +47,7 @@ public class GameActivity extends BaseActivity {
         int winningPoints = intent.getIntExtra("winningPoints", 30);
         String difficulty = intent.getStringExtra("difficulty");
         ArrayList<Team> teams = (ArrayList<Team>) intent.getSerializableExtra("teams");
+        Collections.shuffle(teams);
 
         game = new Game(teams, timeLimit, winningPoints, difficulty, this);
     }
@@ -59,13 +62,12 @@ public class GameActivity extends BaseActivity {
     private void initializeLayout() {
         tvWordCard = findViewById(R.id.wordCard);
         tvTimeLeft = findViewById(R.id.tvTimeLeft);
-        tvTeamName = findViewById(R.id.tvTeamName);
     }
 
     private void startTurn() {
         currentTeamIndex = currentTeamIndex == game.teamsList.size() ? 0 : currentTeamIndex;
-        tvTeamName.setText(game.teamsList.get(currentTeamIndex).getName());
-        startTimer(game.turnTime);
+
+        showStartTurnDialog();
 
         currentTeamIndex++;
     }
@@ -168,10 +170,33 @@ public class GameActivity extends BaseActivity {
 
             @Override
             public void onFinish() {
+                tvTimeLeft.setAlpha(0);
                 startTurn();
-
             }
         }.start();
     }
 
+    private void showStartTurnDialog() {
+        View dialogView = DialogUtils.inflateDialogView(this, R.layout.dialog_start_turn);
+
+        TextView tvTeamNameDialog = dialogView.findViewById(R.id.tvTeamName);
+        TextView btnStartTurn = dialogView.findViewById(R.id.btnStartTurn);
+
+        String currentTeamName = game.teamsList.get(currentTeamIndex).getName();
+        tvTeamNameDialog.setText(getResources().getString(R.string.team_turn, currentTeamName));
+
+        AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
+        DialogUtils.setDialogWidth(dialog, this, 280);
+
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
+        btnStartTurn.setOnClickListener(v -> {
+            dialog.dismiss();
+            tvTimeLeft.setAlpha(1);
+            startTimer(game.turnTime);
+        });
+
+        dialog.show();
+    }
 }
