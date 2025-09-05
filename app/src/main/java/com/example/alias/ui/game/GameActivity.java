@@ -26,6 +26,7 @@ public class GameActivity extends BaseActivity {
     private TextView tvTimeLeft;
     private int currentWordIndex = 0;
     private int currentTeamIndex = 0;
+    private int turnTimeLeft;
 
     private Game game;
 
@@ -147,9 +148,10 @@ public class GameActivity extends BaseActivity {
 
         float deltaY = zoneCenterY - cardCenterY;
 
+        int swipeAnimationDuration = 300;
         tvWordCard.animate()
                 .translationYBy(deltaY)
-                .setDuration(300)
+                .setDuration(swipeAnimationDuration)
                 .withEndAction(() -> {
                     currentWordIndex++;
                     tvWordCard.postDelayed(() -> {
@@ -158,20 +160,30 @@ public class GameActivity extends BaseActivity {
                     }, 100);
                 })
                 .start();
+
+        if (isTurnEnded()) {
+            tvTimeLeft.postDelayed(() -> {
+                tvTimeLeft.setAlpha(0);
+                startTurn();
+            }, swipeAnimationDuration);
+        }
+    }
+
+    private boolean isTurnEnded() {
+        return turnTimeLeft == 0;
     }
 
     private void startTimer(int seconds) {
         new CountDownTimer(seconds * 1000L, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                int sec = (int) (millisUntilFinished / 1000);
-                tvTimeLeft.setText(getResources().getString(R.string.time_left, sec));
+                turnTimeLeft = (int) (millisUntilFinished / 1000);
+                tvTimeLeft.setText(getResources().getString(R.string.time_left, turnTimeLeft));
             }
 
             @Override
             public void onFinish() {
-                tvTimeLeft.setAlpha(0);
-                startTurn();
+                tvTimeLeft.setText("Останнє слово!");
             }
         }.start();
     }
