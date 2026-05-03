@@ -57,11 +57,16 @@
     <string name="cancel">Скасувати</string>
 
     <string name="word">Слово</string>
+    <string name="word_format">%1$s</string>
     <string name="guessed">Відгадано</string>
     <string name="skip">Пропустити</string>
-    <string name="time_left">Часу залишилося: %d</string>
-    <string name="team_turn">Хід команди — %s</string>
+    <string name="time_left">Часу залишилося: %1$d</string>
+    <string name="team_turn">Хід команди — %1$s</string>
     <string name="start_turn">Почати хід</string>
+    <string name="team_results">Результати команди %1$s</string>
+    <string name="btn_continue">Продовжити</string>
+    <string name="turn_results">Результати раунду: %1$s%2$d</string>
+    <string name="startTurnScore">0 / 0</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

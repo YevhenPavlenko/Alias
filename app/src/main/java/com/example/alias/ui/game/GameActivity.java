@@ -6,14 +6,26 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.alias.R;
 import com.example.alias.model.Game;
 import com.example.alias.model.Team;
+import com.example.alias.model.Word;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.game.adapter.TurnResultsAdapter;
 import com.example.alias.util.DashedZoneDrawable;
 import com.example.alias.util.DialogUtils;
 
@@ -24,11 +36,16 @@ public class GameActivity extends BaseActivity {
 
     private TextView tvWordCard;
     private TextView tvTimeLeft;
+    private TextView tvTurnScore;
     private int currentWordIndex = 0;
+    private Word currentWord;
     private int currentTeamIndex = 0;
+    private int turnGuessedCount;
     private int turnTimeLeft;
 
     private Game game;
+    private Team currentTeam;
+    private ArrayList<Word> wordsUsed;
 
     private float dY = 0f;
 
@@ -63,14 +80,78 @@ public class GameActivity extends BaseActivity {
     private void initializeLayout() {
         tvWordCard = findViewById(R.id.wordCard);
         tvTimeLeft = findViewById(R.id.tvTimeLeft);
+        tvTurnScore = findViewById(R.id.tvTurnScore);
     }
 
     private void startTurn() {
         currentTeamIndex = currentTeamIndex == game.teamsList.size() ? 0 : currentTeamIndex;
+        currentTeam = game.teamsList.get(currentTeamIndex);
 
-        showStartTurnDialog();
+        if(currentTeamIndex == 0 && checkForWinner()) {
+            endGame(currentTeam);
+        }
+        else {
+            wordsUsed = new ArrayList<>();
+            turnGuessedCount = 0;
+            updateTurnScore(0, 0);
+            showStartTurnDialog();
+            currentTeamIndex++;
+        }
+    }
 
-        currentTeamIndex++;
+    private boolean checkForWinner() {
+        ArrayList<Team> teams = new ArrayList<>(game.teamsList);
+        int maxTeamPoints = Integer.MIN_VALUE;
+        int teamsWithMaxPointsCounter = 0;
+
+        for(int i = 0; i < teams.size(); i++) {
+            int teamScore = teams.get(i).getScore();
+
+            if(teamScore >= game.pointsToWin) {
+                if(teamScore > maxTeamPoints) {
+                    maxTeamPoints = teamScore;
+                    teamsWithMaxPointsCounter = 1;
+                }
+                else if(teamScore == maxTeamPoints) {
+                    teamsWithMaxPointsCounter++;
+                }
+            }
+        }
+
+        return teamsWithMaxPointsCounter == 1;
+    }
+
+    private void endGame(Team gameWinner) {
+    }
+
+    @SuppressLint("ResourceType")
+    private void updateTurnScore(int guessed, int skipped) {
+        String text = guessed + " / " + skipped;
+
+        Spannable spannable = new SpannableString(text);
+
+        spannable.setSpan(
+                new ForegroundColorSpan(Color.parseColor(getString(R.color.correctGreen))),
+                0,
+                String.valueOf(guessed).length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        spannable.setSpan(
+                new ForegroundColorSpan(Color.parseColor(getString(R.color.white))),
+                String.valueOf(guessed).length(),
+                String.valueOf(guessed).length() + 1,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        spannable.setSpan(
+                new ForegroundColorSpan(Color.parseColor(getString(R.color.wrongRed))),
+                String.valueOf(guessed).length() + 3,
+                text.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        tvTurnScore.setText(spannable);
     }
 
     @SuppressLint("ResourceType")
@@ -79,12 +160,15 @@ public class GameActivity extends BaseActivity {
         findViewById(R.id.bottomZone).setBackground(new DashedZoneDrawable(Color.parseColor(getString(R.color.wrongRed)), 6f));
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void showCurrentWord() {
         if (currentWordIndex < game.wordsList.size()) {
-            tvWordCard.setText(game.wordsList.get(currentWordIndex));
+            currentWord = new Word(game.wordsList.get(currentWordIndex), false);
+            tvWordCard.setText(currentWord.getText());
             tvWordCard.setTranslationY(0);
         } else {
             tvWordCard.setText("Слова закінчилися!");
+            tvWordCard.setOnTouchListener((v, event) -> false);
         }
     }
 
@@ -161,11 +245,25 @@ public class GameActivity extends BaseActivity {
                 })
                 .start();
 
+        if(toTopZone) {
+            currentTeam.incrementScore();
+            turnGuessedCount++;
+            currentWord.setGuessed(true);
+
+        } else {
+            currentTeam.decrementScore();
+        }
+
+        wordsUsed.add(currentWord);
+
         if (isTurnEnded()) {
             tvTimeLeft.postDelayed(() -> {
                 tvTimeLeft.setAlpha(0);
-                startTurn();
+                tvTurnScore.setAlpha(0);
+                showTurnResultsDialog();
             }, swipeAnimationDuration);
+        } else {
+            updateTurnScore(turnGuessedCount, wordsUsed.size() - turnGuessedCount);
         }
     }
 
@@ -192,9 +290,9 @@ public class GameActivity extends BaseActivity {
         View dialogView = DialogUtils.inflateDialogView(this, R.layout.dialog_start_turn);
 
         TextView tvTeamNameDialog = dialogView.findViewById(R.id.tvTeamName);
-        TextView btnStartTurn = dialogView.findViewById(R.id.btnStartTurn);
+        AppCompatButton btnStartTurn = dialogView.findViewById(R.id.btnStartTurn);
 
-        String currentTeamName = game.teamsList.get(currentTeamIndex).getName();
+        String currentTeamName =  currentTeam.getName();
         tvTeamNameDialog.setText(getResources().getString(R.string.team_turn, currentTeamName));
 
         AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
@@ -206,9 +304,55 @@ public class GameActivity extends BaseActivity {
         btnStartTurn.setOnClickListener(v -> {
             dialog.dismiss();
             tvTimeLeft.setAlpha(1);
+            tvTurnScore.setAlpha(1);
             startTimer(game.turnTime);
         });
 
         dialog.show();
+    }
+
+    private void showTurnResultsDialog() {
+        View dialogView = DialogUtils.inflateDialogView(this, R.layout.dialog_turn_result);
+
+        RecyclerView rvUsedWords = dialogView.findViewById(R.id.rvUsedWords);
+        AppCompatButton btnCloseScore = dialogView.findViewById(R.id.btnCloseScore);
+
+        TextView tvTeamResults = dialogView.findViewById(R.id.tvTeamResults);
+
+        tvTeamResults.setText(
+                getString(R.string.team_results, currentTeam.getName())
+        );
+
+        TurnResultsAdapter adapter = new TurnResultsAdapter(this, wordsUsed, currentTeam);
+        rvUsedWords.setAdapter(adapter);
+        rvUsedWords.setLayoutManager(new LinearLayoutManager(this));
+
+        AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
+
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
+        btnCloseScore.setOnClickListener(v -> {
+            dialog.dismiss();
+            startTurn();
+        });
+
+        dialog.show();
+        resizeTurnResultsDialog(dialog);
+    }
+
+    private void resizeTurnResultsDialog(AlertDialog dialog) {
+        if (dialog.getWindow() != null) {
+            Window window = dialog.getWindow();
+
+            DisplayMetrics metrics = new DisplayMetrics();
+            window.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+            int width = (int) (metrics.widthPixels * 0.8);
+            int height = (int) (metrics.heightPixels * 0.8);
+
+            window.setLayout(width, height);
+            window.setGravity(Gravity.CENTER);
+        }
     }
 }
