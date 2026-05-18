@@ -41,7 +41,7 @@
     <string name="easy">Легкі</string>
     <string name="medium">Середні</string>
     <string name="hard">Важкі</string>
-    <string name="round_time">Час на хід</string>
+    <string name="round_time">Час раунду</string>
     <string name="start_time">60 сек</string>
     <string name="points_to_win">Очки для перемоги</string>
     <string name="start_points">30</string>
@@ -67,6 +67,13 @@
     <string name="btn_continue">Продовжити</string>
     <string name="turn_results">Результати раунду: %1$s%2$d</string>
     <string name="startTurnScore">0 / 0</string>
+    <string name="settings_audio_feedback">Аудіо та відгук</string>
+    <string name="settings_game_parameters">Параметри гри</string>
+    <string name="sound">Звук</string>
+    <string name="vibration">Вібрація</string>
+    <string name="default_difficulty">Складність за замовчуванням</string>
+    <string name="reset_settings">Скинути налаштування</string>
+    <string name="settings_reset">Налаштування скинуто</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

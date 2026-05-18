@@ -10,6 +10,7 @@ import com.example.alias.R;
 import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.ui.gamemode.GameModeActivity;
 import com.example.alias.ui.rules.RuleActivity;
+import com.example.alias.ui.settings.SettingsActivity;
 
 public class MainActivity extends BaseActivity {
 
@@ -31,6 +32,7 @@ public class MainActivity extends BaseActivity {
 
         btnPlay.setOnClickListener(v -> navigateTo(GameModeActivity.class));
         btnHowToPlay.setOnClickListener(v -> navigateTo(RuleActivity.class));
+        btnSettings.setOnClickListener(v -> navigateTo(SettingsActivity.class));
         btnExit.setOnClickListener(v -> finish());
 
         enableDoubleBackToExit();
