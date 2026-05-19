@@ -17,4 +17,15 @@
     <color name="correctGreen">#2E7D32</color>
     <color name="wrongRed">#E45656</color>
 
+    <color name="answer_correct_text">#0F6B2E</color>
+    <color name="answer_correct_bg">#D9F5E1</color>
+    <color name="answer_correct_icon">#0F6B2E</color>
+
+    <color name="answer_wrong_text">#A61E2E</color>
+    <color name="answer_wrong_bg">#FAD9DE</color>
+    <color name="answer_wrong_icon">#A61E2E</color>
+
+    <color name="used_word_default_bg">#33FFFFFF</color>
+    <color name="used_word_default_stroke">#40FFFFFF</color>
+
 </resources>

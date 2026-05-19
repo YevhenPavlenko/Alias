@@ -12,16 +12,29 @@
         <item name="android:shadowRadius">4</item>
     </style>
 
-    <style name="MainButton">
+<!--    <style name="MainButton">-->
+<!--        <item name="android:layout_width">0dp</item>-->
+<!--        <item name="android:layout_height">wrap_content</item>-->
+<!--        <item name="android:background">@drawable/btn_orange</item>-->
+<!--        <item name="android:textColor">#FFFFFF</item>-->
+<!--        <item name="android:textSize">18sp</item>-->
+<!--        <item name="android:padding">12dp</item>-->
+<!--        <item name="android:layout_marginLeft">32dp</item>-->
+<!--        <item name="android:layout_marginRight">32dp</item>-->
+<!--        <item name="android:elevation">4dp</item>-->
+<!--    </style>-->
+
+    <style name="DialogSecondaryButton" parent="Widget.AppCompat.Button">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@drawable/btn_orange</item>
-        <item name="android:textColor">#FFFFFF</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:padding">12dp</item>
-        <item name="android:layout_marginLeft">32dp</item>
-        <item name="android:layout_marginRight">32dp</item>
-        <item name="android:elevation">4dp</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:background">@drawable/btn_dialog_secondary</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
     </style>
 
     <style name="PrimaryGameButton" parent="Widget.AppCompat.Button">

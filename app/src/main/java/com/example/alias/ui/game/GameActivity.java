@@ -292,23 +292,22 @@ public class GameActivity extends BaseActivity {
         TextView tvTeamNameDialog = dialogView.findViewById(R.id.tvTeamName);
         AppCompatButton btnStartTurn = dialogView.findViewById(R.id.btnStartTurn);
 
-        String currentTeamName =  currentTeam.getName();
+        String currentTeamName = currentTeam.getName();
         tvTeamNameDialog.setText(getResources().getString(R.string.team_turn, currentTeamName));
 
         AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
-        DialogUtils.setDialogWidth(dialog, this, 280);
-
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
 
         btnStartTurn.setOnClickListener(v -> {
             dialog.dismiss();
-            tvTimeLeft.setAlpha(1);
-            tvTurnScore.setAlpha(1);
+            tvTimeLeft.setAlpha(1f);
+            tvTurnScore.setAlpha(1f);
             startTimer(game.turnTime);
         });
 
         dialog.show();
+        DialogUtils.setDialogWidth(dialog, this, 320);
     }
 
     private void showTurnResultsDialog() {
@@ -320,7 +319,7 @@ public class GameActivity extends BaseActivity {
         TextView tvTeamResults = dialogView.findViewById(R.id.tvTeamResults);
 
         tvTeamResults.setText(
-                getString(R.string.team_results, currentTeam.getName())
+                getString(R.string.dialog_team_results_with_name, currentTeam.getName())
         );
 
         TurnResultsAdapter adapter = new TurnResultsAdapter(this, wordsUsed, currentTeam);

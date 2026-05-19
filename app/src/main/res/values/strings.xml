@@ -4,7 +4,6 @@
     <string name="title">ЕЛІАС</string>
     <string name="start_game">Почати гру</string>
     <string name="rules">Як грати</string>
-    <string name="settings">Налаштування</string>
     <string name="history">Історія ігор</string>
     <string name="exit">Вийти</string>
 
@@ -74,6 +73,27 @@
     <string name="default_difficulty">Складність за замовчуванням</string>
     <string name="reset_settings">Скинути налаштування</string>
     <string name="settings_reset">Налаштування скинуто</string>
+
+    <string name="settings">Налаштування</string>
+    <string name="game_mode_title">Режим гри</string>
+    <string name="rules_title">Правила</string>
+    <string name="game_setup_title">Параметри гри</string>
+    <string name="results_title">Результати</string>
+
+    <string name="dialog_current_turn">Поточний хід</string>
+    <string name="dialog_start_turn_hint">Підготуйтеся до раунду та натисніть кнопку старту</string>
+    <string name="dialog_team_name_title">Назва команди</string>
+    <string name="dialog_team_results_title">Результати команди</string>
+    <string name="dialog_team_results_with_name">Результати команди\n%1$s</string>
+
+    <string name="used_word_status">Статус слова</string>
+
+    <string name="winner_label">Переможець</string>
+    <string name="final_score">Підсумковий рахунок</string>
+    <string name="play_again">Зіграти ще раз</string>
+    <string name="back_to_menu">До головного меню</string>
+
+
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>

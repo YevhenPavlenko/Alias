@@ -25,13 +25,22 @@ import java.util.List;
 
 public class GameSetupActivity extends BaseActivity {
 
+    private static final int TIME_MIN = 30;
+    private static final int TIME_MAX = 120;
+    private static final int TIME_STEP = 5;
+    private static final int TIME_DEFAULT = 60;
+
+    private static final int POINTS_MIN = 10;
+    private static final int POINTS_MAX = 100;
+    private static final int POINTS_STEP = 5;
+    private static final int POINTS_DEFAULT = 30;
     private List<Team> teamsList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_setup);
-        setupHeader(R.string.game_setup);
+        setupHeader(getString(R.string.game_setup_title));
 
         setupDifficultyButtons();
         setupTimeSeekBar();
@@ -87,18 +96,18 @@ public class GameSetupActivity extends BaseActivity {
         AppCompatSeekBar sbTime = findViewById(R.id.sbTime);
         TextView tvTimeValue = findViewById(R.id.tvTimeValue);
 
-        final int minTime = 30;
-        final int defaultTime = 60;
+        int maxProgress = (TIME_MAX - TIME_MIN) / TIME_STEP;
+        int defaultProgress = (TIME_DEFAULT - TIME_MIN) / TIME_STEP;
 
-        sbTime.setMax(120 - minTime);
-        sbTime.setProgress(defaultTime - minTime);
+        sbTime.setMax(maxProgress);
+        sbTime.setProgress(defaultProgress);
 
-        updateTimeText(tvTimeValue, defaultTime);
+        updateTimeText(tvTimeValue, TIME_DEFAULT);
 
         sbTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int seconds = minTime + progress;
+                int seconds = TIME_MIN + progress * TIME_STEP;
                 updateTimeText(tvTimeValue, seconds);
             }
 
@@ -114,20 +123,35 @@ public class GameSetupActivity extends BaseActivity {
         AppCompatSeekBar sbWinningPoints = findViewById(R.id.sbWinningPoints);
         TextView tvWinningPointsValue = findViewById(R.id.tvWinningPointsValue);
 
+        int maxProgress = (POINTS_MAX - POINTS_MIN) / POINTS_STEP;
+        int defaultProgress = (POINTS_DEFAULT - POINTS_MIN) / POINTS_STEP;
+
+        sbWinningPoints.setMax(maxProgress);
+        sbWinningPoints.setProgress(defaultProgress);
+
+        updatePointsText(tvWinningPointsValue, POINTS_DEFAULT);
+
         sbWinningPoints.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int points = Math.max(progress, 10);
-                tvWinningPointsValue.setText(String.valueOf(points));
+                int points = POINTS_MIN + progress * POINTS_STEP;
+                updatePointsText(tvWinningPointsValue, points);
             }
 
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
         });
     }
 
     private void updateTimeText(TextView textView, int seconds) {
         textView.setText(getString(R.string.time_in_seconds, seconds));
+    }
+
+    private void updatePointsText(TextView textView, int points) {
+        textView.setText(String.valueOf(points));
     }
 
     private void setupTeamCards() {

@@ -22,7 +22,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnPlay"
-        style="@style/MainButton"
+        style="@style/PrimaryGameButton"
         android:layout_marginTop="100dp"
         android:text="@string/start_game"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,7 +31,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnHowToPlay"
-        style="@style/MainButton"
+        style="@style/PrimaryGameButton"
         android:text="@string/rules"
         app:layout_constraintTop_toBottomOf="@id/btnPlay"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnSettings"
-        style="@style/MainButton"
+        style="@style/PrimaryGameButton"
         android:text="@string/settings"
         app:layout_constraintTop_toBottomOf="@id/btnHowToPlay"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +49,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnHistory"
-        style="@style/MainButton"
+        style="@style/PrimaryGameButton"
         android:text="@string/history"
         app:layout_constraintTop_toBottomOf="@id/btnSettings"
         app:layout_constraintStart_toStartOf="parent"
@@ -58,7 +58,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnExit"
-        style="@style/MainButton"
+        style="@style/PrimaryGameButton"
         android:text="@string/exit"
         app:layout_constraintTop_toBottomOf="@id/btnHistory"
         app:layout_constraintStart_toStartOf="parent"

@@ -13,7 +13,7 @@ public class GameModeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_mode);
-        setupHeader(R.string.chose_game_mode);
+        setupHeader(getString(R.string.game_mode_title));
 
         Button btnSingleDevice = findViewById(R.id.btnSingleDevice);
         Button btnJoinLobby = findViewById(R.id.btnJoinLobby);
