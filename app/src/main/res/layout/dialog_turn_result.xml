@@ -28,10 +28,13 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvUsedWords"
         android:layout_width="0dp"
-        android:layout_height="260dp"
+        android:layout_height="390dp"
         android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="ifContentScrolls"
+        android:paddingBottom="4dp"
+        android:scrollbars="vertical"
         app:layout_constraintTop_toBottomOf="@id/tvTeamResults"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

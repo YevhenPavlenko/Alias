@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatButton;
@@ -315,7 +316,6 @@ public class GameActivity extends BaseActivity {
 
         RecyclerView rvUsedWords = dialogView.findViewById(R.id.rvUsedWords);
         AppCompatButton btnCloseScore = dialogView.findViewById(R.id.btnCloseScore);
-
         TextView tvTeamResults = dialogView.findViewById(R.id.tvTeamResults);
 
         tvTeamResults.setText(
@@ -325,9 +325,9 @@ public class GameActivity extends BaseActivity {
         TurnResultsAdapter adapter = new TurnResultsAdapter(this, wordsUsed, currentTeam);
         rvUsedWords.setAdapter(adapter);
         rvUsedWords.setLayoutManager(new LinearLayoutManager(this));
+        rvUsedWords.setHasFixedSize(true);
 
         AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
-
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
 
@@ -343,14 +343,12 @@ public class GameActivity extends BaseActivity {
     private void resizeTurnResultsDialog(AlertDialog dialog) {
         if (dialog.getWindow() != null) {
             Window window = dialog.getWindow();
-
             DisplayMetrics metrics = new DisplayMetrics();
             window.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-            int width = (int) (metrics.widthPixels * 0.8);
-            int height = (int) (metrics.heightPixels * 0.8);
+            int width = (int) (metrics.widthPixels * 0.86);
 
-            window.setLayout(width, height);
+            window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
             window.setGravity(Gravity.CENTER);
         }
     }
