@@ -19,29 +19,31 @@ import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.ui.game.GameActivity;
 import com.example.alias.ui.setup.adapter.TeamAdapter;
 import com.example.alias.util.SwipeHelper;
+import com.example.alias.ui.settings.SettingsManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameSetupActivity extends BaseActivity {
 
-    private static final int TIME_MIN = 30;
-    private static final int TIME_MAX = 120;
-    private static final int TIME_STEP = 5;
-    private static final int TIME_DEFAULT = 60;
+    private static final int TIME_MIN = SettingsManager.ROUND_TIME_MIN;
+    private static final int TIME_MAX = SettingsManager.ROUND_TIME_MAX;
+    private static final int TIME_STEP = SettingsManager.ROUND_TIME_STEP;
 
-    private static final int POINTS_MIN = 10;
-    private static final int POINTS_MAX = 100;
-    private static final int POINTS_STEP = 5;
-    private static final int POINTS_DEFAULT = 30;
+    private static final int POINTS_MIN = SettingsManager.WIN_SCORE_MIN;
+    private static final int POINTS_MAX = SettingsManager.WIN_SCORE_MAX;
+    private static final int POINTS_STEP = SettingsManager.WIN_SCORE_STEP;
     private List<Team> teamsList;
+    private SettingsManager settingsManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_setup);
-        setupHeader(getString(R.string.game_setup_title));
 
+        settingsManager = new SettingsManager(this);
+
+        setupHeader(getString(R.string.game_setup_title));
         setupDifficultyButtons();
         setupTimeSeekBar();
         setupPointSeekBar();
@@ -55,8 +57,8 @@ public class GameSetupActivity extends BaseActivity {
         btnPlay.setOnClickListener(v -> {
             Intent intent = new Intent(this, GameActivity.class);
 
-            int timeLimit = 30 + ((AppCompatSeekBar) findViewById(R.id.sbTime)).getProgress();
-            int winningPoints = Math.max(((AppCompatSeekBar) findViewById(R.id.sbWinningPoints)).getProgress(), 10);
+            int timeLimit = getSelectedTimeLimit();
+            int winningPoints = getSelectedWinningPoints();
 
             String difficulty = "easy";
             if (findViewById(R.id.btnMedium).isSelected()) difficulty = "medium";
@@ -97,12 +99,16 @@ public class GameSetupActivity extends BaseActivity {
         TextView tvTimeValue = findViewById(R.id.tvTimeValue);
 
         int maxProgress = (TIME_MAX - TIME_MIN) / TIME_STEP;
-        int defaultProgress = (TIME_DEFAULT - TIME_MIN) / TIME_STEP;
+
+        int defaultTime = settingsManager.getDefaultRoundTime();
+        defaultTime = clamp(defaultTime, TIME_MIN, TIME_MAX);
+
+        int defaultProgress = (defaultTime - TIME_MIN) / TIME_STEP;
 
         sbTime.setMax(maxProgress);
         sbTime.setProgress(defaultProgress);
 
-        updateTimeText(tvTimeValue, TIME_DEFAULT);
+        updateTimeText(tvTimeValue, defaultTime);
 
         sbTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -124,12 +130,16 @@ public class GameSetupActivity extends BaseActivity {
         TextView tvWinningPointsValue = findViewById(R.id.tvWinningPointsValue);
 
         int maxProgress = (POINTS_MAX - POINTS_MIN) / POINTS_STEP;
-        int defaultProgress = (POINTS_DEFAULT - POINTS_MIN) / POINTS_STEP;
+
+        int defaultPoints = settingsManager.getDefaultWinScore();
+        defaultPoints = clamp(defaultPoints, POINTS_MIN, POINTS_MAX);
+
+        int defaultProgress = (defaultPoints - POINTS_MIN) / POINTS_STEP;
 
         sbWinningPoints.setMax(maxProgress);
         sbWinningPoints.setProgress(defaultProgress);
 
-        updatePointsText(tvWinningPointsValue, POINTS_DEFAULT);
+        updatePointsText(tvWinningPointsValue, defaultPoints);
 
         sbWinningPoints.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -144,6 +154,20 @@ public class GameSetupActivity extends BaseActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) { }
         });
+    }
+
+    private int getSelectedTimeLimit() {
+        AppCompatSeekBar sbTime = findViewById(R.id.sbTime);
+        return TIME_MIN + sbTime.getProgress() * TIME_STEP;
+    }
+
+    private int getSelectedWinningPoints() {
+        AppCompatSeekBar sbWinningPoints = findViewById(R.id.sbWinningPoints);
+        return POINTS_MIN + sbWinningPoints.getProgress() * POINTS_STEP;
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     private void updateTimeText(TextView textView, int seconds) {
