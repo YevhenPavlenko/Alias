@@ -50,6 +50,9 @@ public class GameActivity extends BaseActivity {
 
     private float dY = 0f;
 
+    private boolean isCardSwipeInProgress = false;
+    private boolean isTurnResultsDialogShowing = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,10 +91,13 @@ public class GameActivity extends BaseActivity {
         currentTeamIndex = currentTeamIndex == game.teamsList.size() ? 0 : currentTeamIndex;
         currentTeam = game.teamsList.get(currentTeamIndex);
 
+        isCardSwipeInProgress = false;
+        isTurnResultsDialogShowing = false;
+        tvWordCard.setEnabled(true);
+
         if(currentTeamIndex == 0 && checkForWinner()) {
             endGame(currentTeam);
-        }
-        else {
+        } else {
             wordsUsed = new ArrayList<>();
             turnGuessedCount = 0;
             updateTurnScore(0, 0);
@@ -176,8 +182,13 @@ public class GameActivity extends BaseActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void setupCardSwipe() {
         tvWordCard.setOnTouchListener((v, event) -> {
+            if (isCardSwipeInProgress || isTurnResultsDialogShowing) {
+                return true;
+            }
+
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
+                    v.animate().cancel();
                     dY = v.getY() - event.getRawY();
                     return true;
 
@@ -192,10 +203,21 @@ public class GameActivity extends BaseActivity {
                     } else if (isViewOverlapping(tvWordCard, findViewById(R.id.bottomZone))) {
                         animateCardSwipe(false);
                     } else {
-                        tvWordCard.animate().translationY(0f).setDuration(200).start();
+                        tvWordCard.animate()
+                                .translationY(0f)
+                                .setDuration(200)
+                                .start();
                     }
                     return true;
+
+                case MotionEvent.ACTION_CANCEL:
+                    tvWordCard.animate()
+                            .translationY(0f)
+                            .setDuration(200)
+                            .start();
+                    return true;
             }
+
             return false;
         });
     }
@@ -221,51 +243,69 @@ public class GameActivity extends BaseActivity {
     }
 
     private void animateCardSwipe(boolean toTopZone) {
+        if (isCardSwipeInProgress || isTurnResultsDialogShowing || currentWord == null) {
+            return;
+        }
+
+        isCardSwipeInProgress = true;
+        tvWordCard.setEnabled(false);
+        tvWordCard.animate().cancel();
+
         View zone = findViewById(toTopZone ? R.id.topZone : R.id.bottomZone);
 
         int[] cardLocation = new int[2];
         int[] zoneLocation = new int[2];
+
         tvWordCard.getLocationOnScreen(cardLocation);
         zone.getLocationOnScreen(zoneLocation);
 
         float cardCenterY = cardLocation[1] + tvWordCard.getHeight() / 2f;
         float zoneCenterY = zoneLocation[1] + zone.getHeight() / 2f;
-
         float deltaY = zoneCenterY - cardCenterY;
 
-        int swipeAnimationDuration = 300;
+        int swipeAnimationDuration = 150;
+
+        Word swipedWord = currentWord;
+
+        if (toTopZone) {
+            currentTeam.incrementScore();
+            turnGuessedCount++;
+            swipedWord.setGuessed(true);
+        } else {
+            currentTeam.decrementScore();
+            swipedWord.setGuessed(false);
+        }
+
+        wordsUsed.add(swipedWord);
+        updateTurnScore(turnGuessedCount, wordsUsed.size() - turnGuessedCount);
+
+        boolean turnEndedAfterSwipe = isTurnEnded();
+
+        if (turnEndedAfterSwipe) {
+            isTurnResultsDialogShowing = true;
+        }
+
         tvWordCard.animate()
                 .translationYBy(deltaY)
                 .setDuration(swipeAnimationDuration)
                 .withEndAction(() -> {
                     currentWordIndex++;
+
                     tvWordCard.postDelayed(() -> {
                         tvWordCard.setTranslationY(0f);
                         showCurrentWord();
+
+                        if (turnEndedAfterSwipe) {
+                            tvTimeLeft.setAlpha(0);
+                            tvTurnScore.setAlpha(0);
+                            showTurnResultsDialog();
+                        } else {
+                            isCardSwipeInProgress = false;
+                            tvWordCard.setEnabled(true);
+                        }
                     }, 100);
                 })
                 .start();
-
-        if(toTopZone) {
-            currentTeam.incrementScore();
-            turnGuessedCount++;
-            currentWord.setGuessed(true);
-
-        } else {
-            currentTeam.decrementScore();
-        }
-
-        wordsUsed.add(currentWord);
-
-        if (isTurnEnded()) {
-            tvTimeLeft.postDelayed(() -> {
-                tvTimeLeft.setAlpha(0);
-                tvTurnScore.setAlpha(0);
-                showTurnResultsDialog();
-            }, swipeAnimationDuration);
-        } else {
-            updateTurnScore(turnGuessedCount, wordsUsed.size() - turnGuessedCount);
-        }
     }
 
     private boolean isTurnEnded() {
@@ -273,6 +313,8 @@ public class GameActivity extends BaseActivity {
     }
 
     private void startTimer(int seconds) {
+        turnTimeLeft = seconds;
+
         new CountDownTimer(seconds * 1000L, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -282,6 +324,7 @@ public class GameActivity extends BaseActivity {
 
             @Override
             public void onFinish() {
+                turnTimeLeft = 0;
                 tvTimeLeft.setText("Останнє слово!");
             }
         }.start();
@@ -333,6 +376,11 @@ public class GameActivity extends BaseActivity {
 
         btnCloseScore.setOnClickListener(v -> {
             dialog.dismiss();
+
+            isTurnResultsDialogShowing = false;
+            isCardSwipeInProgress = false;
+            tvWordCard.setEnabled(true);
+
             startTurn();
         });
 
