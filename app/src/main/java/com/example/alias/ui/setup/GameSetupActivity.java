@@ -36,12 +36,18 @@ public class GameSetupActivity extends BaseActivity {
     private List<Team> teamsList;
     private SettingsManager settingsManager;
 
+    private int initialTimeLimit;
+    private int initialWinningPoints;
+    private String initialDifficulty;
+    private ArrayList<Team> initialTeams;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_setup);
 
         settingsManager = new SettingsManager(this);
+        readInitialGameSettings();
 
         setupHeader(getString(R.string.game_setup_title));
         setupDifficultyButtons();
@@ -75,6 +81,62 @@ public class GameSetupActivity extends BaseActivity {
         });
     }
 
+    private void readInitialGameSettings() {
+        Intent intent = getIntent();
+
+        initialTimeLimit = normalizeToStep(
+                intent.getIntExtra("timeLimit", settingsManager.getDefaultRoundTime()),
+                TIME_MIN,
+                TIME_MAX,
+                TIME_STEP
+        );
+
+        initialWinningPoints = normalizeToStep(
+                intent.getIntExtra("winningPoints", settingsManager.getDefaultWinScore()),
+                POINTS_MIN,
+                POINTS_MAX,
+                POINTS_STEP
+        );
+
+        initialDifficulty = intent.getStringExtra("difficulty");
+
+        if (initialDifficulty == null || initialDifficulty.trim().isEmpty()) {
+            initialDifficulty = settingsManager.getDefaultDifficulty();
+        }
+
+        initialTeams = readTeamsFromIntent(intent);
+    }
+
+    private ArrayList<Team> readTeamsFromIntent(Intent intent) {
+        ArrayList<Team> result = new ArrayList<>();
+
+        Object extra = intent.getSerializableExtra("teams");
+
+        if (extra instanceof ArrayList<?>) {
+            ArrayList<?> receivedTeams = (ArrayList<?>) extra;
+
+            for (Object item : receivedTeams) {
+                if (item instanceof Team) {
+                    Team team = (Team) item;
+
+                    if (team.getName() != null && !team.getName().trim().isEmpty()) {
+                        result.add(new Team(team.getName().trim()));
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private int normalizeToStep(int value, int min, int max, int step) {
+        value = clamp(value, min, max);
+
+        int steps = Math.round((value - min) / (float) step);
+
+        return min + steps * step;
+    }
+
     private void setupDifficultyButtons() {
         Button btnEasy = findViewById(R.id.btnEasy);
         Button btnMedium = findViewById(R.id.btnMedium);
@@ -84,6 +146,7 @@ public class GameSetupActivity extends BaseActivity {
             btnEasy.setSelected(false);
             btnMedium.setSelected(false);
             btnHard.setSelected(false);
+
             v.setSelected(true);
         };
 
@@ -91,7 +154,21 @@ public class GameSetupActivity extends BaseActivity {
         btnMedium.setOnClickListener(listener);
         btnHard.setOnClickListener(listener);
 
-        btnEasy.setSelected(true);
+        selectInitialDifficulty(btnEasy, btnMedium, btnHard);
+    }
+
+    private void selectInitialDifficulty(Button btnEasy, Button btnMedium, Button btnHard) {
+        btnEasy.setSelected(false);
+        btnMedium.setSelected(false);
+        btnHard.setSelected(false);
+
+        if (SettingsManager.DIFFICULTY_MEDIUM.equals(initialDifficulty)) {
+            btnMedium.setSelected(true);
+        } else if (SettingsManager.DIFFICULTY_HARD.equals(initialDifficulty)) {
+            btnHard.setSelected(true);
+        } else {
+            btnEasy.setSelected(true);
+        }
     }
 
     private void setupTimeSeekBar() {
@@ -100,7 +177,7 @@ public class GameSetupActivity extends BaseActivity {
 
         int maxProgress = (TIME_MAX - TIME_MIN) / TIME_STEP;
 
-        int defaultTime = settingsManager.getDefaultRoundTime();
+        int defaultTime = initialTimeLimit;
         defaultTime = clamp(defaultTime, TIME_MIN, TIME_MAX);
 
         int defaultProgress = (defaultTime - TIME_MIN) / TIME_STEP;
@@ -131,7 +208,7 @@ public class GameSetupActivity extends BaseActivity {
 
         int maxProgress = (POINTS_MAX - POINTS_MIN) / POINTS_STEP;
 
-        int defaultPoints = settingsManager.getDefaultWinScore();
+        int defaultPoints = initialWinningPoints;
         defaultPoints = clamp(defaultPoints, POINTS_MIN, POINTS_MAX);
 
         int defaultProgress = (defaultPoints - POINTS_MIN) / POINTS_STEP;
@@ -183,8 +260,14 @@ public class GameSetupActivity extends BaseActivity {
         AppCompatButton btnAddTeam = findViewById(R.id.btnAddTeam);
 
         teamsList = new ArrayList<>();
-        teamsList.add(new Team("Команда 1"));
-        teamsList.add(new Team("Команда 2"));
+
+        if (initialTeams != null && !initialTeams.isEmpty()) {
+            teamsList.addAll(initialTeams);
+        }
+
+        while (teamsList.size() < 2) {
+            teamsList.add(new Team(generateDefaultTeamName()));
+        }
 
         TeamAdapter adapter = new TeamAdapter(this, teamsList);
         rvTeams.setAdapter(adapter);
@@ -207,6 +290,17 @@ public class GameSetupActivity extends BaseActivity {
         });
 
         SwipeHelper.attachSwipeToDelete(rvTeams, adapter);
+    }
+
+    private String generateDefaultTeamName() {
+        int index = 1;
+        String newName;
+
+        do {
+            newName = "Команда " + index++;
+        } while (isNameAlreadyUsed(teamsList, newName));
+
+        return newName;
     }
 
     private boolean isNameAlreadyUsed(List<Team> teamList, String name) {

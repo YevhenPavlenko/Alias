@@ -27,6 +27,7 @@ import com.example.alias.model.Team;
 import com.example.alias.model.Word;
 import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.ui.game.adapter.TurnResultsAdapter;
+import com.example.alias.ui.score.ScoreActivity;
 import com.example.alias.util.DashedZoneDrawable;
 import com.example.alias.util.DialogUtils;
 
@@ -53,6 +54,8 @@ public class GameActivity extends BaseActivity {
     private boolean isCardSwipeInProgress = false;
     private boolean isTurnResultsDialogShowing = false;
 
+    private String gameDifficulty = "easy";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,15 +66,29 @@ public class GameActivity extends BaseActivity {
         startTurn();
     }
 
+    @SuppressWarnings("unchecked")
     private void initializeGame() {
         Intent intent = getIntent();
+
         int timeLimit = intent.getIntExtra("timeLimit", 60);
         int winningPoints = intent.getIntExtra("winningPoints", 30);
-        String difficulty = intent.getStringExtra("difficulty");
+
+        gameDifficulty = intent.getStringExtra("difficulty");
+        if (gameDifficulty == null) {
+            gameDifficulty = "easy";
+        }
+
         ArrayList<Team> teams = (ArrayList<Team>) intent.getSerializableExtra("teams");
+
+        if (teams == null || teams.isEmpty()) {
+            teams = new ArrayList<>();
+            teams.add(new Team("Команда 1"));
+            teams.add(new Team("Команда 2"));
+        }
+
         Collections.shuffle(teams);
 
-        game = new Game(teams, timeLimit, winningPoints, difficulty, this);
+        game = new Game(teams, timeLimit, winningPoints, gameDifficulty, this);
     }
 
     private void setupLayout() {
@@ -96,7 +113,7 @@ public class GameActivity extends BaseActivity {
         tvWordCard.setEnabled(true);
 
         if(currentTeamIndex == 0 && checkForWinner()) {
-            endGame(currentTeam);
+            endGame();
         } else {
             wordsUsed = new ArrayList<>();
             turnGuessedCount = 0;
@@ -128,7 +145,16 @@ public class GameActivity extends BaseActivity {
         return teamsWithMaxPointsCounter == 1;
     }
 
-    private void endGame(Team gameWinner) {
+    private void endGame() {
+        Intent intent = new Intent(this, ScoreActivity.class);
+
+        intent.putExtra("teams", new ArrayList<>(game.teamsList));
+        intent.putExtra("timeLimit", game.turnTime);
+        intent.putExtra("winningPoints", game.pointsToWin);
+        intent.putExtra("difficulty", gameDifficulty);
+
+        startActivity(intent);
+        finish();
     }
 
     @SuppressLint("ResourceType")

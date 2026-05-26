@@ -90,10 +90,12 @@
 
     <string name="winner_label">Переможець</string>
     <string name="final_score">Підсумковий рахунок</string>
-    <string name="play_again">Зіграти ще раз</string>
+    <string name="play_again">Нова гра</string>
     <string name="back_to_menu">До головного меню</string>
 
-
+    <string name="results_table_hint">Турнірна таблиця команд</string>
+    <string name="place_label">%1$d місце</string>
+    <string name="points_label">очок</string>
 
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>
