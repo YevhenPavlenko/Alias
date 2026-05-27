@@ -31,6 +31,13 @@ import com.example.alias.ui.score.ScoreActivity;
 import com.example.alias.util.DashedZoneDrawable;
 import com.example.alias.util.DialogUtils;
 
+import android.app.Dialog;
+import android.graphics.drawable.ColorDrawable;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -299,21 +306,21 @@ public class GameActivity extends BaseActivity {
 
         Word swipedWord = currentWord;
 
-        if (toTopZone) {
-            currentTeam.incrementScore();
-            turnGuessedCount++;
-            swipedWord.setGuessed(true);
-        } else {
-            currentTeam.decrementScore();
-            swipedWord.setGuessed(false);
-        }
+        boolean isLastWordSwipe = isTurnEnded();
+
+        swipedWord.setLastWord(isLastWordSwipe);
+        swipedWord.setGuessed(toTopZone);
+        swipedWord.setAssignedTeam(null);
 
         wordsUsed.add(swipedWord);
-        updateTurnScore(turnGuessedCount, wordsUsed.size() - turnGuessedCount);
 
-        boolean turnEndedAfterSwipe = isTurnEnded();
+        if (!swipedWord.isLastWord()) {
+            applyWordScore(swipedWord);
+        }
 
-        if (turnEndedAfterSwipe) {
+        refreshTurnScoreFromWordsUsed();
+
+        if (swipedWord.isLastWord()) {
             isTurnResultsDialogShowing = true;
         }
 
@@ -326,17 +333,22 @@ public class GameActivity extends BaseActivity {
                     tvWordCard.postDelayed(() -> {
                         tvWordCard.setTranslationY(0f);
 
-                        boolean shouldFinishTurn = turnEndedAfterSwipe || isTurnEnded();
+                        boolean shouldFinishTurn = swipedWord.isLastWord() || isTurnEnded();
 
                         if (shouldFinishTurn) {
-                            isTurnResultsDialogShowing = true;
+                            if (swipedWord.isLastWord() && swipedWord.isGuessed()) {
+                                hideWordCardUntilRoundStarts();
 
-                            hideWordCardUntilRoundStarts();
+                                tvTimeLeft.setAlpha(0f);
+                                tvTurnScore.setAlpha(0f);
 
-                            tvTimeLeft.setAlpha(0);
-                            tvTurnScore.setAlpha(0);
-
-                            showTurnResultsDialog();
+                                showLastWordTeamDialog(
+                                        swipedWord,
+                                        this::finishTurnAndShowResults
+                                );
+                            } else {
+                                finishTurnAndShowResults();
+                            }
                         } else {
                             showCurrentWord();
 
@@ -346,6 +358,273 @@ public class GameActivity extends BaseActivity {
                     }, 100);
                 })
                 .start();
+    }
+
+    private void applyWordScore(Word word) {
+        if (word == null) {
+            return;
+        }
+
+        if (word.isLastWord()) {
+            if (word.isGuessed() && word.getAssignedTeam() != null) {
+                word.getAssignedTeam().incrementScore();
+            }
+
+            return;
+        }
+
+        if (currentTeam == null) {
+            return;
+        }
+
+        if (word.isGuessed()) {
+            currentTeam.incrementScore();
+        } else {
+            currentTeam.decrementScore();
+        }
+    }
+
+    private void revertWordScore(Word word) {
+        if (word == null) {
+            return;
+        }
+
+        if (word.isLastWord()) {
+            if (word.isGuessed() && word.getAssignedTeam() != null) {
+                word.getAssignedTeam().decrementScore();
+            }
+
+            return;
+        }
+
+        if (currentTeam == null) {
+            return;
+        }
+
+        if (word.isGuessed()) {
+            currentTeam.decrementScore();
+        } else {
+            currentTeam.incrementScore();
+        }
+    }
+
+    private void changeWordResult(Word word, boolean guessed, Team assignedTeam) {
+        if (word == null) {
+            return;
+        }
+
+        revertWordScore(word);
+
+        word.setGuessed(guessed);
+
+        if (word.isLastWord()) {
+            word.setAssignedTeam(guessed ? assignedTeam : null);
+        } else {
+            word.setAssignedTeam(null);
+        }
+
+        applyWordScore(word);
+        refreshTurnScoreFromWordsUsed();
+    }
+
+    private void refreshTurnScoreFromWordsUsed() {
+        int guessed = 0;
+        int skipped = 0;
+
+        if (wordsUsed != null) {
+            for (Word word : wordsUsed) {
+                if (word.isGuessed()) {
+                    guessed++;
+                } else {
+                    skipped++;
+                }
+            }
+        }
+
+        turnGuessedCount = guessed;
+        updateTurnScore(guessed, skipped);
+    }
+
+    private void showLastWordTeamDialog(Word word, Runnable afterSelection) {
+        ArrayList<Team> availableTeams = new ArrayList<>();
+
+        if (game != null && game.teamsList != null) {
+            availableTeams.addAll(game.teamsList);
+        }
+
+        if (availableTeams.isEmpty() && currentTeam != null) {
+            availableTeams.add(currentTeam);
+        }
+
+        if (availableTeams.isEmpty()) {
+            changeWordResult(word, false, null);
+
+            if (afterSelection != null) {
+                afterSelection.run();
+            }
+
+            return;
+        }
+
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_last_word_team);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
+        TextView tvLastWordDialogWord = dialog.findViewById(R.id.tvLastWordDialogWord);
+        LinearLayout teamsContainer = dialog.findViewById(R.id.teamsContainer);
+        AppCompatButton btnApplyPoint = dialog.findViewById(R.id.btnApplyLastWordPoint);
+        AppCompatButton btnNoPoint = dialog.findViewById(R.id.btnNoLastWordPoint);
+
+        tvLastWordDialogWord.setText(
+                getString(R.string.last_word_dialog_word, word.getText())
+        );
+
+        final Team[] selectedTeam = new Team[1];
+
+        if (word.isGuessed() && word.getAssignedTeam() != null) {
+            selectedTeam[0] = word.getAssignedTeam();
+        }
+
+        ArrayList<View> optionViews = new ArrayList<>();
+        ArrayList<Team> optionTeams = new ArrayList<>();
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+
+        for (Team team : availableTeams) {
+            View optionView = inflater.inflate(
+                    R.layout.item_last_word_team_option,
+                    teamsContainer,
+                    false
+            );
+
+            TextView tvTeamName = optionView.findViewById(R.id.tvLastWordTeamName);
+            TextView tvTeamScore = optionView.findViewById(R.id.tvLastWordTeamScore);
+
+            tvTeamName.setText(team.getName());
+            tvTeamScore.setText(getString(R.string.last_word_team_score, team.getScore()));
+
+            optionView.setOnClickListener(v -> {
+                selectedTeam[0] = team;
+
+                updateLastWordTeamOptions(
+                        optionViews,
+                        optionTeams,
+                        selectedTeam[0],
+                        btnApplyPoint
+                );
+            });
+
+            teamsContainer.addView(optionView);
+
+            optionViews.add(optionView);
+            optionTeams.add(team);
+        }
+
+        updateLastWordTeamOptions(
+                optionViews,
+                optionTeams,
+                selectedTeam[0],
+                btnApplyPoint
+        );
+
+        btnApplyPoint.setOnClickListener(v -> {
+            if (selectedTeam[0] == null) {
+                return;
+            }
+
+            changeWordResult(word, true, selectedTeam[0]);
+
+            dialog.dismiss();
+
+            if (afterSelection != null) {
+                afterSelection.run();
+            }
+        });
+
+        btnNoPoint.setOnClickListener(v -> {
+            changeWordResult(word, false, null);
+
+            dialog.dismiss();
+
+            if (afterSelection != null) {
+                afterSelection.run();
+            }
+        });
+
+        dialog.show();
+
+        Window window = dialog.getWindow();
+
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(
+                    (int) (getResources().getDisplayMetrics().widthPixels * 0.90f),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+    private void updateLastWordTeamOptions(
+            ArrayList<View> optionViews,
+            ArrayList<Team> optionTeams,
+            Team selectedTeam,
+            AppCompatButton btnApplyPoint
+    ) {
+        for (int i = 0; i < optionViews.size(); i++) {
+            View optionView = optionViews.get(i);
+            Team team = optionTeams.get(i);
+
+            boolean isSelected = isSameTeam(team, selectedTeam);
+
+            RadioButton rbTeamSelected = optionView.findViewById(R.id.rbTeamSelected);
+            TextView tvTeamChoice = optionView.findViewById(R.id.tvLastWordTeamChoice);
+
+            optionView.setSelected(isSelected);
+            rbTeamSelected.setChecked(isSelected);
+
+            if (isSelected) {
+                tvTeamChoice.setText(R.string.last_word_selected_team);
+            } else {
+                tvTeamChoice.setText(R.string.last_word_tap_to_select);
+            }
+        }
+
+        if (selectedTeam == null) {
+            btnApplyPoint.setEnabled(false);
+            btnApplyPoint.setAlpha(0.55f);
+            btnApplyPoint.setText(R.string.last_word_apply_disabled);
+        } else {
+            btnApplyPoint.setEnabled(true);
+            btnApplyPoint.setAlpha(1f);
+            btnApplyPoint.setText(
+                    getString(R.string.last_word_apply_to, selectedTeam.getName())
+            );
+        }
+    }
+
+    private boolean isSameTeam(Team firstTeam, Team secondTeam) {
+        if (firstTeam == secondTeam) {
+            return true;
+        }
+
+        if (firstTeam == null || secondTeam == null) {
+            return false;
+        }
+
+        return firstTeam.getName().equalsIgnoreCase(secondTeam.getName());
+    }
+
+    private void finishTurnAndShowResults() {
+        isTurnResultsDialogShowing = true;
+        isCardSwipeInProgress = false;
+
+        hideWordCardUntilRoundStarts();
+
+        tvTimeLeft.setAlpha(0f);
+        tvTurnScore.setAlpha(0f);
+
+        showTurnResultsDialog();
     }
 
     private boolean isTurnEnded() {
@@ -411,9 +690,57 @@ public class GameActivity extends BaseActivity {
                 getString(R.string.dialog_team_results_with_name, currentTeam.getName())
         );
 
-        TurnResultsAdapter adapter = new TurnResultsAdapter(this, wordsUsed, currentTeam);
+        final TurnResultsAdapter[] adapterHolder = new TurnResultsAdapter[1];
+
+        TurnResultsAdapter adapter = new TurnResultsAdapter(
+                this,
+                wordsUsed,
+                new TurnResultsAdapter.OnWordResultActionListener() {
+                    @Override
+                    public void onToggleNormalWord(Word word, int position) {
+                        changeWordResult(word, !word.isGuessed(), null);
+
+                        if (adapterHolder[0] != null && position != RecyclerView.NO_POSITION) {
+                            adapterHolder[0].notifyItemChanged(position);
+                        }
+                    }
+
+                    @Override
+                    public void onToggleLastWord(Word word, int position) {
+                        if (word.isGuessed()) {
+                            changeWordResult(word, false, null);
+
+                            if (adapterHolder[0] != null && position != RecyclerView.NO_POSITION) {
+                                adapterHolder[0].notifyItemChanged(position);
+                            }
+                        } else {
+                            showLastWordTeamDialog(word, () -> {
+                                if (adapterHolder[0] != null && position != RecyclerView.NO_POSITION) {
+                                    adapterHolder[0].notifyItemChanged(position);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onChangeLastWordTeam(Word word, int position) {
+                        showLastWordTeamDialog(word, () -> {
+                            if (adapterHolder[0] != null && position != RecyclerView.NO_POSITION) {
+                                adapterHolder[0].notifyItemChanged(position);
+                            }
+                        });
+                    }
+                }
+        );
+
+        adapterHolder[0] = adapter;
         rvUsedWords.setAdapter(adapter);
-        rvUsedWords.setLayoutManager(new LinearLayoutManager(this));
+        scrollRoundResultsToBottom(rvUsedWords);
+        LinearLayoutManager usedWordsLayoutManager = new LinearLayoutManager(this);
+        usedWordsLayoutManager.setReverseLayout(false);
+        usedWordsLayoutManager.setStackFromEnd(true);
+
+        rvUsedWords.setLayoutManager(usedWordsLayoutManager);
         rvUsedWords.setHasFixedSize(true);
 
         AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
@@ -432,6 +759,23 @@ public class GameActivity extends BaseActivity {
 
         dialog.show();
         resizeTurnResultsDialog(dialog);
+        scrollRoundResultsToBottom(rvUsedWords);
+    }
+
+    private void scrollRoundResultsToBottom(RecyclerView recyclerView) {
+        if (recyclerView == null || recyclerView.getAdapter() == null) {
+            return;
+        }
+
+        recyclerView.post(() -> {
+            RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
+
+            if (adapter == null || adapter.getItemCount() == 0) {
+                return;
+            }
+
+            recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+        });
     }
 
     private void resizeTurnResultsDialog(AlertDialog dialog) {

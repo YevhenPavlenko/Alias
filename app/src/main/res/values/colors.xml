@@ -28,4 +28,16 @@
     <color name="used_word_default_bg">#33FFFFFF</color>
     <color name="used_word_default_stroke">#40FFFFFF</color>
 
+    <color name="last_word_success_bg">#EAF7FF</color>
+    <color name="last_word_success_stroke">#2196F3</color>
+
+    <color name="last_word_no_point_bg">#F8F0FF</color>
+    <color name="last_word_no_point_stroke">#8E5CF7</color>
+
+    <color name="last_word_pending_bg">#FFF8E1</color>
+    <color name="last_word_pending_stroke">#FFC107</color>
+
+    <color name="last_word_text">#1E2A44</color>
+    <color name="last_word_meta_text">#5D6476</color>
+
 </resources>

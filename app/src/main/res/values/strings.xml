@@ -97,6 +97,22 @@
     <string name="place_label">%1$d місце</string>
     <string name="points_label">очок</string>
 
+    <string name="no_point">Без балу</string>
+    <string name="choose_last_word_team_title">Кому зарахувати останнє слово?</string>
+    <string name="choose_last_word_team_message">Оберіть команду, яка першою відгадала спільне слово.</string>
+
+    <string name="last_word_dialog_word">Останнє слово: %1$s</string>
+    <string name="last_word_team_score">Поточний рахунок: %1$d</string>
+    <string name="last_word_selected_team">Отримає +1</string>
+    <string name="last_word_tap_to_select">Обрати</string>
+    <string name="last_word_apply_disabled">Оберіть команду</string>
+    <string name="last_word_apply_to">Зарахувати: %1$s</string>
+
+    <string name="last_word_format">⭐ %1$s</string>
+    <string name="last_word_point_to">Спільне слово · +1 для %1$s</string>
+    <string name="last_word_no_point">Спільне слово · не зараховане</string>
+    <string name="last_word_choose_team">Спільне слово · виберіть команду</string>
+
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>
         <item>Блискавки</item>

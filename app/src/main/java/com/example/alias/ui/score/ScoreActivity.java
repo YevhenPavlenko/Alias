@@ -17,7 +17,6 @@ import com.example.alias.ui.main.MainActivity;
 import com.example.alias.ui.score.adapter.TeamResultAdapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class ScoreActivity extends BaseActivity {
 
@@ -130,10 +129,5 @@ public class ScoreActivity extends BaseActivity {
 
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        goToMainMenu();
     }
 }
