@@ -95,7 +95,7 @@ public class GameActivity extends BaseActivity {
         initializeLayout();
         setupZones();
         setupCardSwipe();
-        showCurrentWord();
+        hideWordCardUntilRoundStarts();
     }
 
     private void initializeLayout() {
@@ -110,7 +110,7 @@ public class GameActivity extends BaseActivity {
 
         isCardSwipeInProgress = false;
         isTurnResultsDialogShowing = false;
-        tvWordCard.setEnabled(true);
+        hideWordCardUntilRoundStarts();
 
         if(currentTeamIndex == 0 && checkForWinner()) {
             endGame();
@@ -195,13 +195,19 @@ public class GameActivity extends BaseActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void showCurrentWord() {
+        tvWordCard.animate().cancel();
+        tvWordCard.setTranslationY(0f);
+        tvWordCard.setVisibility(View.VISIBLE);
+        tvWordCard.setAlpha(1f);
+
         if (currentWordIndex < game.wordsList.size()) {
-            currentWord = new Word(game.wordsList.get(currentWordIndex), false);
+            currentWord = new Word(String.valueOf(game.wordsList.get(currentWordIndex)), false);
             tvWordCard.setText(currentWord.getText());
-            tvWordCard.setTranslationY(0);
+            tvWordCard.setEnabled(true);
         } else {
+            currentWord = null;
             tvWordCard.setText("Слова закінчилися!");
-            tvWordCard.setOnTouchListener((v, event) -> false);
+            tvWordCard.setEnabled(false);
         }
     }
 
@@ -319,13 +325,21 @@ public class GameActivity extends BaseActivity {
 
                     tvWordCard.postDelayed(() -> {
                         tvWordCard.setTranslationY(0f);
-                        showCurrentWord();
 
-                        if (turnEndedAfterSwipe) {
+                        boolean shouldFinishTurn = turnEndedAfterSwipe || isTurnEnded();
+
+                        if (shouldFinishTurn) {
+                            isTurnResultsDialogShowing = true;
+
+                            hideWordCardUntilRoundStarts();
+
                             tvTimeLeft.setAlpha(0);
                             tvTurnScore.setAlpha(0);
+
                             showTurnResultsDialog();
                         } else {
+                            showCurrentWord();
+
                             isCardSwipeInProgress = false;
                             tvWordCard.setEnabled(true);
                         }
@@ -335,7 +349,7 @@ public class GameActivity extends BaseActivity {
     }
 
     private boolean isTurnEnded() {
-        return turnTimeLeft == 0;
+        return turnTimeLeft <= 0;
     }
 
     private void startTimer(int seconds) {
@@ -371,8 +385,14 @@ public class GameActivity extends BaseActivity {
 
         btnStartTurn.setOnClickListener(v -> {
             dialog.dismiss();
+
             tvTimeLeft.setAlpha(1f);
             tvTurnScore.setAlpha(1f);
+
+            isCardSwipeInProgress = false;
+            isTurnResultsDialogShowing = false;
+
+            showCurrentWord();
             startTimer(game.turnTime);
         });
 
@@ -425,5 +445,14 @@ public class GameActivity extends BaseActivity {
             window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
             window.setGravity(Gravity.CENTER);
         }
+    }
+
+    private void hideWordCardUntilRoundStarts() {
+        tvWordCard.animate().cancel();
+        tvWordCard.setText("");
+        tvWordCard.setTranslationY(0f);
+        tvWordCard.setVisibility(View.INVISIBLE);
+        tvWordCard.setEnabled(false);
+        currentWord = null;
     }
 }
