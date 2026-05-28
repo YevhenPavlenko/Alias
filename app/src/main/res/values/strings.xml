@@ -113,6 +113,36 @@
     <string name="last_word_no_point">Спільне слово · не зараховане</string>
     <string name="last_word_choose_team">Спільне слово · виберіть команду</string>
 
+    <string name="history_empty">Зіграних ігор ще немає</string>
+
+    <string name="history_game_number">Гра #%1$d</string>
+    <string name="history_winner">Переможець: %1$s</string>
+
+    <string name="history_duration">Тривалість гри: %1$s</string>
+    <string name="history_round_time">⌛ Час на раунд: %1$d сек</string>
+    <string name="history_points_to_win">🏆 Очки для перемоги: %1$d</string>
+    <string name="history_difficulty">🎯 Складність: %1$s</string>
+
+    <string name="history_teams_title">Команди</string>
+    <string name="history_team_place">%1$d місце</string>
+    <string name="history_team_score">%1$d оч.</string>
+
+    <string name="history_no_words_for_team">У цієї команди немає слів</string>
+
+    <string name="history_word_guessed">Зараховано</string>
+    <string name="history_word_skipped">Пропущено</string>
+    <string name="history_word_last_guessed">Спільне слово · зараховано</string>
+    <string name="history_word_last_skipped">Спільне слово · без штрафу</string>
+
+    <string name="history_team_place_preview">1 місце</string>
+    <string name="history_team_score_preview">30 оч.</string>
+    <string name="history_team_name_preview">Дуже довга назва команди</string>
+
+    <string name="arrow_expand">▼</string>
+    <string name="arrow_collapse">▲</string>
+
+    <string name="history_team_expand_content_description">Розгорнути або згорнути слова команди</string>
+
     <string-array name="team_name_suggestions">
         <item>Кмітливі</item>
         <item>Блискавки</item>

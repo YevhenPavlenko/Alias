@@ -30,6 +30,8 @@ import com.example.alias.ui.game.adapter.TurnResultsAdapter;
 import com.example.alias.ui.score.ScoreActivity;
 import com.example.alias.util.DashedZoneDrawable;
 import com.example.alias.util.DialogUtils;
+import com.example.alias.util.GameHistoryDbHelper;
+import com.example.alias.model.GameWordResult;
 
 import android.app.Dialog;
 import android.graphics.drawable.ColorDrawable;
@@ -62,6 +64,12 @@ public class GameActivity extends BaseActivity {
     private boolean isTurnResultsDialogShowing = false;
 
     private String gameDifficulty = "easy";
+
+    private long gameStartedAtMillis;
+    private boolean isGameSavedToHistory = false;
+
+    private final ArrayList<GameWordResult> completedGameWords = new ArrayList<>();
+    private int gameWordOrder = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +104,7 @@ public class GameActivity extends BaseActivity {
         Collections.shuffle(teams);
 
         game = new Game(teams, timeLimit, winningPoints, gameDifficulty, this);
+        gameStartedAtMillis = System.currentTimeMillis();
     }
 
     private void setupLayout() {
@@ -153,6 +162,8 @@ public class GameActivity extends BaseActivity {
     }
 
     private void endGame() {
+        saveCompletedGameToHistory();
+
         Intent intent = new Intent(this, ScoreActivity.class);
 
         intent.putExtra("teams", new ArrayList<>(game.teamsList));
@@ -162,6 +173,50 @@ public class GameActivity extends BaseActivity {
 
         startActivity(intent);
         finish();
+    }
+
+    private void saveCompletedGameToHistory() {
+        if (isGameSavedToHistory) {
+            return;
+        }
+
+        isGameSavedToHistory = true;
+
+        long finishedAtMillis = System.currentTimeMillis();
+        long durationSeconds = Math.max(0, (finishedAtMillis - gameStartedAtMillis) / 1000L);
+
+        Team winner = findWinnerTeam();
+
+        String winnerTeamName = winner == null ? "" : winner.getName();
+
+        GameHistoryDbHelper dbHelper = new GameHistoryDbHelper(this);
+
+        dbHelper.saveCompletedGame(
+                finishedAtMillis,
+                durationSeconds,
+                game.turnTime,
+                game.pointsToWin,
+                gameDifficulty,
+                winnerTeamName,
+                game.teamsList,
+                completedGameWords
+        );
+    }
+
+    private Team findWinnerTeam() {
+        if (game == null || game.teamsList == null || game.teamsList.isEmpty()) {
+            return null;
+        }
+
+        Team winner = game.teamsList.get(0);
+
+        for (Team team : game.teamsList) {
+            if (team.getScore() > winner.getScore()) {
+                winner = team;
+            }
+        }
+
+        return winner;
     }
 
     @SuppressLint("ResourceType")
@@ -748,6 +803,7 @@ public class GameActivity extends BaseActivity {
         dialog.setCanceledOnTouchOutside(false);
 
         btnCloseScore.setOnClickListener(v -> {
+            saveCurrentTurnWordsToMemory();
             dialog.dismiss();
 
             isTurnResultsDialogShowing = false;
@@ -760,6 +816,23 @@ public class GameActivity extends BaseActivity {
         dialog.show();
         resizeTurnResultsDialog(dialog);
         scrollRoundResultsToBottom(rvUsedWords);
+    }
+
+    private void saveCurrentTurnWordsToMemory() {
+        if (wordsUsed == null || currentTeam == null) {
+            return;
+        }
+
+        for (Word word : wordsUsed) {
+            completedGameWords.add(new GameWordResult(
+                    currentTeam,
+                    word.getAssignedTeam(),
+                    word.getText(),
+                    word.isGuessed(),
+                    word.isLastWord(),
+                    gameWordOrder++
+            ));
+        }
     }
 
     private void scrollRoundResultsToBottom(RecyclerView recyclerView) {
