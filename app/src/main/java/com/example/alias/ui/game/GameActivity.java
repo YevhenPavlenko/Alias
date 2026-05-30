@@ -17,6 +17,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,8 +52,8 @@ public class GameActivity extends BaseActivity {
     private int currentWordIndex = 0;
     private Word currentWord;
     private int currentTeamIndex = 0;
-    private int turnGuessedCount;
     private int turnTimeLeft;
+    private long turnTimeLeftMillis;
 
     private Game game;
     private Team currentTeam;
@@ -62,6 +63,10 @@ public class GameActivity extends BaseActivity {
 
     private boolean isCardSwipeInProgress = false;
     private boolean isTurnResultsDialogShowing = false;
+    private CountDownTimer turnTimer;
+    private AlertDialog exitGameDialog;
+    private boolean isTurnTimerRunning = false;
+    private boolean isExitGameDialogShowing = false;
 
     private String gameDifficulty = "easy";
 
@@ -79,6 +84,7 @@ public class GameActivity extends BaseActivity {
         initializeGame();
         setupLayout();
         startTurn();
+        setupBackPressHandler();
     }
 
     @SuppressWarnings("unchecked")
@@ -132,7 +138,6 @@ public class GameActivity extends BaseActivity {
             endGame();
         } else {
             wordsUsed = new ArrayList<>();
-            turnGuessedCount = 0;
             updateTurnScore(0, 0);
             showStartTurnDialog();
             currentTeamIndex++;
@@ -162,6 +167,8 @@ public class GameActivity extends BaseActivity {
     }
 
     private void endGame() {
+        cancelTurnTimer();
+
         saveCompletedGameToHistory();
 
         Intent intent = new Intent(this, ScoreActivity.class);
@@ -276,7 +283,7 @@ public class GameActivity extends BaseActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void setupCardSwipe() {
         tvWordCard.setOnTouchListener((v, event) -> {
-            if (isCardSwipeInProgress || isTurnResultsDialogShowing) {
+            if (isCardSwipeInProgress || isTurnResultsDialogShowing || isExitGameDialogShowing) {
                 return true;
             }
 
@@ -496,7 +503,6 @@ public class GameActivity extends BaseActivity {
             }
         }
 
-        turnGuessedCount = guessed;
         updateTurnScore(guessed, skipped);
     }
 
@@ -687,21 +693,75 @@ public class GameActivity extends BaseActivity {
     }
 
     private void startTimer(int seconds) {
-        turnTimeLeft = seconds;
+        startTimerFromMillis(seconds * 1000L);
+    }
 
-        new CountDownTimer(seconds * 1000L, 1000) {
+    private void startTimerFromMillis(long millis) {
+        cancelTurnTimer();
+
+        turnTimeLeftMillis = millis;
+        turnTimeLeft = millisToSecondsCeil(turnTimeLeftMillis);
+
+        tvTimeLeft.setText(getResources().getString(R.string.time_left, turnTimeLeft));
+
+        isTurnTimerRunning = true;
+
+        turnTimer = new CountDownTimer(turnTimeLeftMillis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                turnTimeLeft = (int) (millisUntilFinished / 1000);
+                turnTimeLeftMillis = millisUntilFinished;
+                turnTimeLeft = millisToSecondsCeil(millisUntilFinished);
+
                 tvTimeLeft.setText(getResources().getString(R.string.time_left, turnTimeLeft));
             }
 
             @Override
             public void onFinish() {
+                isTurnTimerRunning = false;
+                turnTimer = null;
+
+                turnTimeLeftMillis = 0L;
                 turnTimeLeft = 0;
-                tvTimeLeft.setText("Останнє слово!");
+
+                tvTimeLeft.setText(getString(R.string.last_word_timer_text));
             }
-        }.start();
+        };
+
+        turnTimer.start();
+    }
+
+    private int millisToSecondsCeil(long millis) {
+        return (int) Math.ceil(millis / 1000.0);
+    }
+
+    private void cancelTurnTimer() {
+        if (turnTimer != null) {
+            turnTimer.cancel();
+            turnTimer = null;
+        }
+
+        isTurnTimerRunning = false;
+    }
+
+    private void pauseTurnTimer() {
+        if (!isTurnTimerRunning || turnTimer == null) {
+            return;
+        }
+
+        turnTimer.cancel();
+        turnTimer = null;
+        isTurnTimerRunning = false;
+
+        turnTimeLeft = millisToSecondsCeil(turnTimeLeftMillis);
+        tvTimeLeft.setText(getResources().getString(R.string.time_left, turnTimeLeft));
+    }
+
+    private void resumeTurnTimerIfNeeded() {
+        if (isTurnTimerRunning || turnTimeLeftMillis <= 0 || isTurnResultsDialogShowing) {
+            return;
+        }
+
+        startTimerFromMillis(turnTimeLeftMillis);
     }
 
     private void showStartTurnDialog() {
@@ -788,15 +848,16 @@ public class GameActivity extends BaseActivity {
                 }
         );
 
-        adapterHolder[0] = adapter;
-        rvUsedWords.setAdapter(adapter);
-        scrollRoundResultsToBottom(rvUsedWords);
+
         LinearLayoutManager usedWordsLayoutManager = new LinearLayoutManager(this);
         usedWordsLayoutManager.setReverseLayout(false);
         usedWordsLayoutManager.setStackFromEnd(true);
 
         rvUsedWords.setLayoutManager(usedWordsLayoutManager);
         rvUsedWords.setHasFixedSize(true);
+
+        adapterHolder[0] = adapter;
+        rvUsedWords.setAdapter(adapter);
 
         AlertDialog dialog = DialogUtils.buildDialog(this, dialogView);
         dialog.setCancelable(false);
@@ -871,5 +932,76 @@ public class GameActivity extends BaseActivity {
         tvWordCard.setVisibility(View.INVISIBLE);
         tvWordCard.setEnabled(false);
         currentWord = null;
+    }
+
+    private void showExitGameConfirmationDialog() {
+        if (exitGameDialog != null && exitGameDialog.isShowing()) {
+            return;
+        }
+
+        pauseTurnTimer();
+        isExitGameDialogShowing = true;
+
+        View dialogView = DialogUtils.inflateDialogView(this, R.layout.dialog_exit_game);
+
+        AppCompatButton btnCancelExit = dialogView.findViewById(R.id.btnCancelExit);
+        AppCompatButton btnConfirmExit = dialogView.findViewById(R.id.btnConfirmExit);
+
+        exitGameDialog = DialogUtils.buildDialog(this, dialogView);
+        exitGameDialog.setCancelable(true);
+        exitGameDialog.setCanceledOnTouchOutside(true);
+
+        exitGameDialog.setOnDismissListener(dialog -> {
+            boolean shouldResumeTimer =
+                    isExitGameDialogShowing
+                            && !isFinishing()
+                            && !isDestroyed();
+
+            isExitGameDialogShowing = false;
+
+            if (shouldResumeTimer) {
+                resumeTurnTimerIfNeeded();
+            }
+        });
+
+        btnCancelExit.setOnClickListener(v -> {
+            if (exitGameDialog != null) {
+                exitGameDialog.dismiss();
+            }
+        });
+
+        btnConfirmExit.setOnClickListener(v -> {
+            isExitGameDialogShowing = false;
+            cancelTurnTimer();
+
+            if (exitGameDialog != null) {
+                exitGameDialog.dismiss();
+            }
+
+            finish();
+        });
+
+        exitGameDialog.show();
+        DialogUtils.setDialogWidth(exitGameDialog, this, 320);
+    }
+
+    private void setupBackPressHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                showExitGameConfirmationDialog();
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        cancelTurnTimer();
+
+        if (exitGameDialog != null && exitGameDialog.isShowing()) {
+            exitGameDialog.dismiss();
+        }
+
+        super.onDestroy();
     }
 }

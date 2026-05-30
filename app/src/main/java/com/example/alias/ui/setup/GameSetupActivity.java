@@ -279,11 +279,7 @@ public class GameSetupActivity extends BaseActivity {
                 return;
             }
 
-            int index = 1;
-            String newName;
-            do {
-                newName = "Команда " + index++;
-            } while (isNameAlreadyUsed(teamsList, newName));
+            String newName = generateDefaultTeamName();
 
             teamsList.add(new Team(newName));
             adapter.notifyItemInserted(teamsList.size() - 1);
@@ -293,12 +289,19 @@ public class GameSetupActivity extends BaseActivity {
     }
 
     private String generateDefaultTeamName() {
-        String[] names = getResources().getStringArray(R.array.default_team_names);
+        String[] defaultNames = getResources().getStringArray(R.array.default_team_names);
 
-        for (String name : names) {
+        ArrayList<String> availableNames = new ArrayList<>();
+
+        for (String name : defaultNames) {
             if (!isNameAlreadyUsed(teamsList, name)) {
-                return name;
+                availableNames.add(name);
             }
+        }
+
+        if (!availableNames.isEmpty()) {
+            int randomIndex = new java.util.Random().nextInt(availableNames.size());
+            return availableNames.get(randomIndex);
         }
 
         int index = 1;
@@ -311,11 +314,16 @@ public class GameSetupActivity extends BaseActivity {
         return fallbackName;
     }
     private boolean isNameAlreadyUsed(List<Team> teamList, String name) {
+        if (teamList == null || name == null) {
+            return false;
+        }
+
         for (Team team : teamList) {
-            if (team.getName().equalsIgnoreCase(name)) {
+            if (team.getName() != null && team.getName().equalsIgnoreCase(name.trim())) {
                 return true;
             }
         }
+
         return false;
     }
 }

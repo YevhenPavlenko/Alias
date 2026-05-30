@@ -123,4 +123,10 @@
     <string name="history_team_expand_content_description">Розгорнути або згорнути слова команди</string>
     <string name="team_fallback_name">Команда %1$d</string>
     <string name="max_teams_message">Максимум 4 команди</string>
+
+    <string name="exit_game_title">Завершити гру?</string>
+    <string name="exit_game_message">Поточний прогрес буде втрачено, а гра не збережеться в історії.</string>
+    <string name="exit_game_confirm">Завершити гру</string>
+    <string name="exit_game_cancel">Продовжити гру</string>
+    <string name="last_word_timer_text">Останнє слово!</string>
 </resources>

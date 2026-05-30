@@ -107,7 +107,7 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.TeamViewHolder
     }
 
     private String generateUniqueRandomName() {
-        String[] suggestions = context.getResources().getStringArray(R.array.team_name_suggestions);
+        String[] suggestions = context.getResources().getStringArray(R.array.default_team_names);
 
         List<String> currentNames = new ArrayList<>();
         for (Team team : teams) {
