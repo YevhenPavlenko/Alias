@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="default_team_names">
+        <item>Кмітливі</item>
+        <item>Влучні</item>
+        <item>Ракети</item>
+        <item>Блискавки</item>
+        <item>Легенди</item>
+        <item>Швидкі</item>
+        <item>Мудреці</item>
+        <item>Фенікси</item>
+        <item>Титани</item>
+        <item>Пірати</item>
+        <item>Дракони</item>
+        <item>Соколи</item>
+        <item>Вовки</item>
+        <item>Лисиці</item>
+        <item>Орли</item>
+        <item>Комети</item>
+        <item>Чемпіони</item>
+        <item>Мисливці</item>
+        <item>Штурм</item>
+        <item>Козаки</item>
+        <item>Мрійники</item>
+        <item>Ніндзя</item>
+        <item>Магніти</item>
+        <item>Капібари</item>
+        <item>Пельмені</item>
+        <item>Котики</item>
+        <item>Бджоли</item>
+        <item>Банани</item>
+        <item>Панди</item>
+        <item>Їжаки</item>
+        <item>Космос</item>
+        <item>Суперники</item>
+        <item>Фортуна</item>
+        <item>Іскри</item>
+        <item>Вітер</item>
+        <item>Хвиля</item>
+        <item>Грім</item>
+        <item>Кристали</item>
+        <item>Смайлики</item>
+        <item>Перці</item>
+    </string-array>
+
+</resources>

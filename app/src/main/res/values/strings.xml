@@ -8,27 +8,6 @@
     <string name="exit">Вийти</string>
 
     <string name="back">Назад</string>
-    <string name="game_rules">
-    <![CDATA[
-        <b>🎯 Мета гри:</b><br/>
-        Пояснити якомога більше слів команді за певний час.<br/><br/>
-
-        <b>🏆 Нарахування балів:</b><br/>
-        + 1 бал — за кожне відгадане слово<br/>
-        − 1 бал — за пропущене слово<br/>
-        − 1 бал — за порушення правил<br/><br/>
-
-        <b>⏳ Завершення таймера:</b><br/>
-        Після завершення таймера <b>останнє слово</b> ще можна пояснити.<br/>
-        Його можуть відгадувати <b>всі команди</b> одночасно.<br/>
-        Команда, яка <font color="#4CAF50"><b>першою правильно відповість</b></font>, забирає бал.<br/><br/>
-
-        <b>⛔ Заборони:</b><br/>
-        ❌ Не можна використовувати однокореневі слова<br/>
-        ❌ Не можна перекладати слово іншою мовою<br/>
-        ❌ Не можна вказувати першу букву або кількість букв
-    ]]>
-</string>
 
     <string name="chose_game_mode">Виберіть режим гри</string>
     <string name="on_one_device">На одному пристрої</string>
@@ -142,18 +121,6 @@
     <string name="arrow_collapse">▲</string>
 
     <string name="history_team_expand_content_description">Розгорнути або згорнути слова команди</string>
-
-    <string-array name="team_name_suggestions">
-        <item>Кмітливі</item>
-        <item>Блискавки</item>
-        <item>Ракети</item>
-        <item>Бобри</item>
-        <item>Синоніми</item>
-        <item>Влучні</item>
-        <item>Буревії</item>
-        <item>Шторм</item>
-        <item>Кодери</item>
-        <item>Герої</item>
-        <item>Лідери</item>
-    </string-array>
+    <string name="team_fallback_name">Команда %1$d</string>
+    <string name="max_teams_message">Максимум 4 команди</string>
 </resources>

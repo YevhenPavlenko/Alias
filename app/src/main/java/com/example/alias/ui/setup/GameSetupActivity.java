@@ -275,7 +275,7 @@ public class GameSetupActivity extends BaseActivity {
 
         btnAddTeam.setOnClickListener(v -> {
             if (teamsList.size() >= 4) {
-                showToast("Максимум 4 команди");
+                showToast(getString(R.string.max_teams_message));
                 return;
             }
 
@@ -293,16 +293,23 @@ public class GameSetupActivity extends BaseActivity {
     }
 
     private String generateDefaultTeamName() {
+        String[] names = getResources().getStringArray(R.array.default_team_names);
+
+        for (String name : names) {
+            if (!isNameAlreadyUsed(teamsList, name)) {
+                return name;
+            }
+        }
+
         int index = 1;
-        String newName;
+        String fallbackName;
 
         do {
-            newName = "Команда " + index++;
-        } while (isNameAlreadyUsed(teamsList, newName));
+            fallbackName = getString(R.string.team_fallback_name, index++);
+        } while (isNameAlreadyUsed(teamsList, fallbackName));
 
-        return newName;
+        return fallbackName;
     }
-
     private boolean isNameAlreadyUsed(List<Team> teamList, String name) {
         for (Team team : teamList) {
             if (team.getName().equalsIgnoreCase(name)) {
