@@ -1,10 +1,11 @@
 package com.example.alias.ui.gamemode;
 
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 
 import com.example.alias.R;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.dictionary.DictionaryActivity;
 import com.example.alias.ui.setup.GameSetupActivity;
 
 public class GameModeActivity extends BaseActivity {
@@ -13,14 +14,15 @@ public class GameModeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_mode);
+
         setupHeader(getString(R.string.game_mode_title));
 
-        Button btnSingleDevice = findViewById(R.id.btnSingleDevice);
-        Button btnJoinLobby = findViewById(R.id.btnJoinLobby);
-        Button btnCreateLobby = findViewById(R.id.btnCreateLobby);
+        View btnSingleDevice = findViewById(R.id.btnSingleDevice);
+        View btnDictionary = findViewById(R.id.btnDictionary);
 
-        animateButtons(btnSingleDevice, btnJoinLobby, btnCreateLobby);
+        animateButtons(btnSingleDevice, btnDictionary);
 
         btnSingleDevice.setOnClickListener(v -> navigateTo(GameSetupActivity.class));
+        btnDictionary.setOnClickListener(v -> navigateTo(DictionaryActivity.class));
     }
 }

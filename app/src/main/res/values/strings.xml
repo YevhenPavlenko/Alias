@@ -129,4 +129,28 @@
     <string name="exit_game_confirm">Завершити гру</string>
     <string name="exit_game_cancel">Продовжити гру</string>
     <string name="last_word_timer_text">Останнє слово!</string>
+
+    <string name="start_game_hint">Налаштувати команди та стартувати</string>
+
+    <string name="view_dictionary">Переглянути словник</string>
+    <string name="view_dictionary_hint">Повторити слова, які хочеш запамʼятати</string>
+
+    <string name="dictionary_title">Словник</string>
+    <string name="dictionary_empty_title">Словник поки порожній</string>
+    <string name="books_icon">📚</string>
+    <string name="dice_icon">🎲</string>
+
+    <string name="dictionary_synonyms_format">Синоніми: %1$s</string>
+    <string name="dictionary_no_synonyms">Синоніми відсутні</string>
+
+    <string name="dictionary_delete_title">Видалити слово?</string>
+    <string name="dictionary_delete_message">Слово “%1$s” буде видалено зі словника.</string>
+    <string name="dictionary_word_deleted">Слово видалено</string>
+    <string name="dictionary_word_delete_error">Не вдалося видалити слово</string>
+
+    <string name="delete">Видалити</string>
+    <string name="add_word_to_dictionary">Додати слово в словник</string>
+    <string name="word_added_to_dictionary">Слово додано в словник</string>
+    <string name="word_add_to_dictionary_error">Не вдалося додати слово в словник</string>
+    <string name="x_icon">✕</string>
 </resources>

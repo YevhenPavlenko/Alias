@@ -35,6 +35,8 @@
             android:exported="false" />
         <activity android:name=".ui.history.HistoryActivity"
             android:exported="false" />
+        <activity android:name=".ui.dictionary.DictionaryActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

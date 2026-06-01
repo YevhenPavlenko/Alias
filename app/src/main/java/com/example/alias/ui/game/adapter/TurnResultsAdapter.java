@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.alias.R;
 import com.example.alias.model.Word;
+import com.example.alias.util.DictionaryDbHelper;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
     private final List<Word> words;
     private final Context context;
     private final OnWordResultActionListener listener;
+    private final DictionaryDbHelper dictionaryDbHelper;
 
     public TurnResultsAdapter(
             Context context,
@@ -39,6 +42,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
         this.context = context;
         this.words = words;
         this.listener = listener;
+        this.dictionaryDbHelper = new DictionaryDbHelper(context);
     }
 
     @NonNull
@@ -65,6 +69,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
 
         applyWordState(holder, word, context);
         applyLastWordInfo(holder, word, context);
+        setupDictionaryButton(holder, word);
 
         holder.itemView.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
@@ -113,6 +118,66 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
         });
     }
 
+    private void setupDictionaryButton(@NonNull TurnResultsViewHolder holder, Word word) {
+        String wordText = getCleanWordText(word);
+
+        if (wordText.isEmpty() || dictionaryDbHelper.isWordInDictionary(wordText)) {
+            holder.btnAddToDictionary.setVisibility(View.GONE);
+            holder.btnAddToDictionary.setOnClickListener(null);
+            return;
+        }
+
+        holder.btnAddToDictionary.setVisibility(View.VISIBLE);
+        holder.btnAddToDictionary.setColorFilter(
+                ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white)
+        );
+
+        holder.btnAddToDictionary.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+
+            if (adapterPosition == RecyclerView.NO_POSITION) {
+                return;
+            }
+
+            Word clickedWord = words.get(adapterPosition);
+            String clickedWordText = getCleanWordText(clickedWord);
+
+            if (clickedWordText.isEmpty()) {
+                return;
+            }
+
+            if (dictionaryDbHelper.isWordInDictionary(clickedWordText)) {
+                holder.btnAddToDictionary.setVisibility(View.GONE);
+                return;
+            }
+
+            long wordId = dictionaryDbHelper.addWordFromCatalog(clickedWordText);
+
+            if (wordId != -1) {
+                holder.btnAddToDictionary.setVisibility(View.GONE);
+                Toast.makeText(
+                        holder.itemView.getContext(),
+                        R.string.word_added_to_dictionary,
+                        Toast.LENGTH_SHORT
+                ).show();
+            } else {
+                Toast.makeText(
+                        holder.itemView.getContext(),
+                        R.string.word_add_to_dictionary_error,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    private String getCleanWordText(Word word) {
+        if (word == null || word.getText() == null) {
+            return "";
+        }
+
+        return word.getText().trim().replaceAll("\\s+", " ");
+    }
+
     private void applyLastWordInfo(
             @NonNull TurnResultsViewHolder holder,
             Word word,
@@ -141,6 +206,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
             holder.tvWordMeta.setText(R.string.last_word_no_point);
         }
     }
+
     private void applyWordState(
             @NonNull TurnResultsViewHolder holder,
             Word word,
@@ -148,9 +214,11 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
     ) {
         if (word.isLastWord()) {
             holder.cardUsedWord.setStrokeWidth(dp(context, 2));
+
             holder.tvUsedWord.setTextColor(
                     ContextCompat.getColor(context, R.color.last_word_text)
             );
+
             holder.tvWordMeta.setTextColor(
                     ContextCompat.getColor(context, R.color.last_word_meta_text)
             );
@@ -159,32 +227,43 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
                 holder.cardUsedWord.setCardBackgroundColor(
                         ContextCompat.getColor(context, R.color.last_word_success_bg)
                 );
+
                 holder.cardUsedWord.setStrokeColor(
                         ContextCompat.getColor(context, R.color.last_word_success_stroke)
                 );
+
                 holder.btnIsGuessed.setImageResource(R.drawable.ic_guessed);
+
                 holder.btnIsGuessed.setColorFilter(
                         ContextCompat.getColor(context, R.color.last_word_success_stroke)
                 );
+
             } else if (word.isGuessed()) {
                 holder.cardUsedWord.setCardBackgroundColor(
                         ContextCompat.getColor(context, R.color.last_word_pending_bg)
                 );
+
                 holder.cardUsedWord.setStrokeColor(
                         ContextCompat.getColor(context, R.color.last_word_pending_stroke)
                 );
+
                 holder.btnIsGuessed.setImageResource(R.drawable.ic_guessed);
+
                 holder.btnIsGuessed.setColorFilter(
                         ContextCompat.getColor(context, R.color.last_word_pending_stroke)
                 );
+
             } else {
                 holder.cardUsedWord.setCardBackgroundColor(
                         ContextCompat.getColor(context, R.color.last_word_no_point_bg)
                 );
+
                 holder.cardUsedWord.setStrokeColor(
                         ContextCompat.getColor(context, R.color.last_word_no_point_stroke)
                 );
+
                 holder.btnIsGuessed.setImageResource(R.drawable.ic_unguessed);
+
                 holder.btnIsGuessed.setColorFilter(
                         ContextCompat.getColor(context, R.color.last_word_no_point_stroke)
                 );
@@ -199,27 +278,36 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
             holder.cardUsedWord.setCardBackgroundColor(
                     ContextCompat.getColor(context, R.color.answer_correct_bg)
             );
+
             holder.cardUsedWord.setStrokeColor(
                     ContextCompat.getColor(context, R.color.answer_correct_text)
             );
+
             holder.tvUsedWord.setTextColor(
                     ContextCompat.getColor(context, R.color.answer_correct_text)
             );
+
             holder.btnIsGuessed.setImageResource(R.drawable.ic_guessed);
+
             holder.btnIsGuessed.setColorFilter(
                     ContextCompat.getColor(context, R.color.answer_correct_icon)
             );
+
         } else {
             holder.cardUsedWord.setCardBackgroundColor(
                     ContextCompat.getColor(context, R.color.answer_wrong_bg)
             );
+
             holder.cardUsedWord.setStrokeColor(
                     ContextCompat.getColor(context, R.color.answer_wrong_text)
             );
+
             holder.tvUsedWord.setTextColor(
                     ContextCompat.getColor(context, R.color.answer_wrong_text)
             );
+
             holder.btnIsGuessed.setImageResource(R.drawable.ic_unguessed);
+
             holder.btnIsGuessed.setColorFilter(
                     ContextCompat.getColor(context, R.color.answer_wrong_icon)
             );
@@ -241,6 +329,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
         TextView tvUsedWord;
         TextView tvWordMeta;
         ImageButton btnIsGuessed;
+        ImageButton btnAddToDictionary;
 
         public TurnResultsViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -249,6 +338,7 @@ public class TurnResultsAdapter extends RecyclerView.Adapter<TurnResultsAdapter.
             tvUsedWord = itemView.findViewById(R.id.tvUsedWord);
             tvWordMeta = itemView.findViewById(R.id.tvWordMeta);
             btnIsGuessed = itemView.findViewById(R.id.btnIsGuessed);
+            btnAddToDictionary = itemView.findViewById(R.id.btnAddToDictionary);
         }
     }
 }
