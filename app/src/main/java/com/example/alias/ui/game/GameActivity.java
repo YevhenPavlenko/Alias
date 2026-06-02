@@ -31,6 +31,7 @@ import com.example.alias.ui.game.adapter.TurnResultsAdapter;
 import com.example.alias.ui.score.ScoreActivity;
 import com.example.alias.util.DashedZoneDrawable;
 import com.example.alias.util.DialogUtils;
+import com.example.alias.util.GameFeedbackManager;
 import com.example.alias.util.GameHistoryDbHelper;
 import com.example.alias.model.GameWordResult;
 
@@ -63,6 +64,7 @@ public class GameActivity extends BaseActivity {
 
     private boolean isCardSwipeInProgress = false;
     private boolean isTurnResultsDialogShowing = false;
+    private GameFeedbackManager feedbackManager;
     private CountDownTimer turnTimer;
     private AlertDialog exitGameDialog;
     private boolean isTurnTimerRunning = false;
@@ -80,6 +82,8 @@ public class GameActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        feedbackManager = new GameFeedbackManager(this);
 
         initializeGame();
         setupLayout();
@@ -375,6 +379,14 @@ public class GameActivity extends BaseActivity {
         swipedWord.setAssignedTeam(null);
 
         wordsUsed.add(swipedWord);
+
+        if (feedbackManager != null) {
+            if (toTopZone) {
+                feedbackManager.playCorrectWord();
+            } else {
+                feedbackManager.playSkippedWord();
+            }
+        }
 
         if (!swipedWord.isLastWord()) {
             applyWordScore(swipedWord);
@@ -713,6 +725,16 @@ public class GameActivity extends BaseActivity {
                 turnTimeLeft = millisToSecondsCeil(millisUntilFinished);
 
                 tvTimeLeft.setText(getResources().getString(R.string.time_left, turnTimeLeft));
+
+                if (feedbackManager == null) {
+                    return;
+                }
+
+                if (turnTimeLeft == 10) {
+                    feedbackManager.playTenSecondsWarning();
+                } else if (turnTimeLeft == 3) {
+                    feedbackManager.playCountdownTick();
+                }
             }
 
             @Override
@@ -724,6 +746,10 @@ public class GameActivity extends BaseActivity {
                 turnTimeLeft = 0;
 
                 tvTimeLeft.setText(getString(R.string.last_word_timer_text));
+
+                if (feedbackManager != null) {
+                    feedbackManager.playTimeUpLastWord();
+                }
             }
         };
 
@@ -1000,6 +1026,11 @@ public class GameActivity extends BaseActivity {
 
         if (exitGameDialog != null && exitGameDialog.isShowing()) {
             exitGameDialog.dismiss();
+        }
+
+        if (feedbackManager != null) {
+            feedbackManager.release();
+            feedbackManager = null;
         }
 
         super.onDestroy();

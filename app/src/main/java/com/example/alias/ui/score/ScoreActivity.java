@@ -15,6 +15,7 @@ import com.example.alias.ui.base.BaseActivity;
 import com.example.alias.ui.setup.GameSetupActivity;
 import com.example.alias.ui.main.MainActivity;
 import com.example.alias.ui.score.adapter.TeamResultAdapter;
+import com.example.alias.util.GameFeedbackManager;
 
 import java.util.ArrayList;
 
@@ -25,12 +26,14 @@ public class ScoreActivity extends BaseActivity {
     private int timeLimit;
     private int winningPoints;
     private String difficulty;
+    private GameFeedbackManager feedbackManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results);
 
+        feedbackManager = new GameFeedbackManager(this);
         readIntentData();
 
         setupHeader(getString(R.string.results_title));
@@ -38,6 +41,7 @@ public class ScoreActivity extends BaseActivity {
 
         setupResultsList();
         setupButtons();
+        feedbackManager.playGameWin();
     }
 
     @SuppressWarnings("unchecked")
@@ -129,5 +133,15 @@ public class ScoreActivity extends BaseActivity {
 
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (feedbackManager != null) {
+            feedbackManager.release();
+            feedbackManager = null;
+        }
+
+        super.onDestroy();
     }
 }
