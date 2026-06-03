@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.alias.R;
 import com.example.alias.model.Team;
 import com.example.alias.ui.base.BaseActivity;
+import com.example.alias.ui.gamemode.GameModeActivity;
 import com.example.alias.ui.setup.GameSetupActivity;
 import com.example.alias.ui.main.MainActivity;
 import com.example.alias.ui.score.adapter.TeamResultAdapter;
@@ -106,25 +107,40 @@ public class ScoreActivity extends BaseActivity {
     }
 
     private void setupButtons() {
-        AppCompatButton btnPlayAgain = findViewById(R.id.btnPlayAgain);
+        AppCompatButton btnNewGame = findViewById(R.id.btnPlayAgain);
         AppCompatButton btnMainMenu = findViewById(R.id.btnMainMenu);
 
-        animateButtons(btnPlayAgain, btnMainMenu);
+        animateButtons(btnNewGame, btnMainMenu);
 
-        btnPlayAgain.setOnClickListener(v -> openSetupWithLastSettings());
-        btnMainMenu.setOnClickListener(v -> goToMainMenu());
+        btnNewGame.setOnClickListener(v -> openNewGameSetup());
+
+        btnMainMenu.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        });
     }
 
-    private void openSetupWithLastSettings() {
-        Intent intent = new Intent(this, GameSetupActivity.class);
+    private void openNewGameSetup() {
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        mainIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
 
-        intent.putExtra("timeLimit", timeLimit);
-        intent.putExtra("winningPoints", winningPoints);
-        intent.putExtra("difficulty", difficulty);
-        intent.putExtra("teams", teamsForSetup);
+        Intent gameModeIntent = new Intent(this, GameModeActivity.class);
 
-        startActivity(intent);
-        finish();
+        Intent setupIntent = new Intent(this, GameSetupActivity.class);
+        setupIntent.putExtra("gameMode", "single_device");
+        setupIntent.putExtra("timeLimit", timeLimit);
+        setupIntent.putExtra("winningPoints", winningPoints);
+        setupIntent.putExtra("difficulty", difficulty);
+        setupIntent.putExtra("teams", teamsForSetup);
+
+        startActivities(new Intent[]{
+                mainIntent,
+                gameModeIntent,
+                setupIntent
+        });
     }
 
     private void goToMainMenu() {
